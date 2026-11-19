@@ -1,0 +1,57 @@
+"""Command line entry point.
+
+  python -m pa_map fetch    [--pilot]       OpenAlex candidates + Crossref dates
+  python -m pa_map clean    [--pilot]       years, filters, dedup, coverage table
+  python -m pa_map embed    [--title-only]  SPECTER2 vectors (run both variants)
+  python -m pa_map cluster                  stability, k-means, macro themes, UMAP, review sheets
+  python -m pa_map export   [--release]     public JSON for the website (+ field check)
+  python -m pa_map all      [--pilot]       fetch -> clean -> embed (both) -> cluster -> export
+  python -m pa_map demo                     synthetic demo data (never publish as results)
+"""
+import os
+import sys
+from pathlib import Path
+
+
+def main():
+    if len(sys.argv) < 2 or sys.argv[1] in ("-h", "--help"):
+        print(__doc__)
+        return
+    cmd, flags = sys.argv[1], set(sys.argv[2:])
+    if cmd == "demo":
+        demo_dir = Path(__file__).resolve().parents[1] / "demo"
+        os.environ["PA_MAP_DATA_DIR"] = str(demo_dir / "data")
+        os.environ["PA_MAP_LABELS_DIR"] = str(demo_dir / "labels")
+
+    from .common import load_config
+    cfg = load_config()
+    pilot = "--pilot" in flags
+
+    if cmd == "demo":
+        from . import demo
+        demo.run(cfg)
+        return
+    if cmd in ("fetch", "all"):
+        from . import fetch
+        fetch.fetch_openalex(cfg, pilot=pilot)
+        fetch.fetch_crossref(cfg, pilot=pilot)
+    if cmd in ("clean", "all"):
+        from . import clean
+        clean.run(cfg, pilot=pilot)
+    if cmd in ("embed", "all"):
+        from . import embed
+        if cmd == "all":
+            embed.run(cfg, title_only=False)
+            embed.run(cfg, title_only=True)
+        else:
+            embed.run(cfg, title_only="--title-only" in flags)
+    if cmd in ("cluster", "all"):
+        from . import cluster
+        cluster.run(cfg, projection="pca" if "--pca" in flags else "umap")
+    if cmd in ("export", "all"):
+        from . import export
+        export.run(cfg, status="release" if "--release" in flags else "pilot")
+
+
+if __name__ == "__main__":
+    main()

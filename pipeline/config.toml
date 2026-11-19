@@ -1,0 +1,102 @@
+# What Is Public Administration? — pipeline configuration
+# Edit this file, then rerun `python -m pa_map <stage>`.
+
+[project]
+data_version = "v0.1"                # bump on every frozen release
+mailto = ""                          # optional contact: set PA_MAP_CONTACT_EMAIL locally
+window_start = 1980
+window_end = 2025                    # cut-off: assigned (issue) year must be <= this
+pilot_start = 2016                   # used when running with --pilot
+comparison_start = 2001              # five-journal comparison window
+
+# ISSNs verified against publisher and OpenAlex records.
+# `start` = first volume year inside the study window.
+[[journals]]
+code = "JPART"
+name = "Journal of Public Administration Research and Theory"
+issn = ["1053-1858", "1477-9803"]
+start = 1991
+volume_year_offset = 1990
+
+[[journals]]
+code = "PAR"
+name = "Public Administration Review"
+issn = ["0033-3352", "1540-6210"]
+crossref_issn = ["1540-6210", "0033-3352"] # legacy JSTOR records are print-only
+start = 1980
+volume_year_offset = 1940
+
+[[journals]]
+code = "PA"
+name = "Public Administration"
+issn = ["0033-3298", "1467-9299"]
+start = 1980
+volume_year_offset = 1922
+
+[[journals]]
+code = "PMR"
+name = "Public Management Review"
+issn = ["1471-9037", "1471-9045"]
+predecessor_issn = ["1461-667X", "1470-1065"]
+start = 1999
+volume_year_offset = 1998
+predecessor_until = 2000             # years <= this are reported separately in Data & Methods
+
+[[journals]]
+code = "GOV"
+name = "Governance"
+issn = ["0952-1895", "1468-0491"]
+start = 1988
+volume_year_offset = 1987
+
+[filter]
+keep_types = ["article", "review"]
+min_pages = 4
+# Case-insensitive regexes on the title. A match => excluded, with the pattern logged.
+exclude_title_patterns = [
+  "^book reviews?\\b", "\\bbook review\\b", "^reviews?:",
+  "^errat(um|a)\\b", "^corrigend(um|a)\\b", "^correction\\b", "^retraction (notice|to|of the article)\\b",
+  "^editorial\\b", "^editor'?s'? (note|introduction|foreword|preface)", "^from the editors?\\b",
+  "^introduction to the (special )?(issue|symposium)\\b",
+  "\\bissue information\\b", "\\b(front|back) matter\\b", "\\btable of contents\\b", "\\bmasthead\\b",
+  "\\b(list of|thank you to|acknowledg(e)?ments? (to|of)) (our )?reviewers\\b", "\\breviewers? (list|acknowledg)",
+  "\\bin memoriam\\b", "^obituary\\b", "^call for papers\\b", "^announcements?\\b",
+  "\\bindex to volume\\b", "^volume \\d+ index\\b", "^(about|notes on) (the )?contributors\\b",
+  "^books (received|in review|for review)\\b", "^book notes?\\b", "^book review (essay|section)\\b",
+  "^(par )?reviewers? (for|in|of) (19|20)\\d{2}\\b", "^reviewer (recognition|thanks)\\b",
+  "^(cover|subscriptions?|oup accepted manuscript)$", "^award citation\\b",
+  "^introduction: .* symposium\\b", "^par welcomes a new editorial team$",
+  "^editing public administration$", "^through the editor.s lens: understanding the editorial role through metaphor$",
+  "^introducing our vision and plans$", "^practically speaking: an introduction$", "^vale siobhan o.sullivan$",
+  "^(reviews|booknotes|foreword|sog bulletin|chronological index|alphabetical index)$",
+  "^information for subscribers$", "^public management research association$", "^jpart reviewers\\b",
+  "^public administration review submission information.*guidelines for authors$",
+  "^review editor.s choice$", "^governance would like to acknowledge\\b", "^\\d+(st|nd|rd|th) anniversary editorial$",
+  "^public administration review[.:]? annual index\\b",
+]
+# PAR practitioner sections. Decide during the pilot, then set to "include" or "exclude".
+par_practitioner_sections = "research_only" # retain substantive scholarship; audit publisher-tagged materials
+par_practitioner_patterns = ["^viewpoints?:", "^commentary:", "^theory to practice:", "^perspective:"]
+
+[embed]
+base_model = "allenai/specter2_base"
+adapter = "allenai/specter2"          # proximity adapter
+max_length = 512
+batch_size = 16
+min_abstract_words = 30               # shorter abstracts are treated as missing (title-only input)
+
+[cluster]
+k_grid = [30, 40, 50, 60]
+seeds = [0, 1, 2, 3, 4]
+k_sub = 0                             # 0 = pick the most stable k from k_grid; otherwise force this k
+n_macro = 10                          # macro themes (8–12)
+
+[umap]
+n_neighbors = 15
+min_dist = 0.1
+metric = "cosine"
+random_state = 42
+
+[trends]
+low_coverage_threshold = 0.5          # abstract coverage below this => flagged
+min_denominator = 20                  # journal-year n below this => flagged

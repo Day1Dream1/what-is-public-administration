@@ -1,0 +1,19 @@
+# Local-only analysis data: abstracts, raw API responses, vectors. Never commit or publish.
+pipeline/data/
+pipeline/demo/data/
+pipeline/.venv/
+__pycache__/
+*.pyc
+
+# Site build
+site/node_modules/
+site/dist/
+
+.DS_Store
+
+# Local workflow notes and authentication overrides
+task_plan.md
+findings.md
+progress.md
+.env
+.env.*

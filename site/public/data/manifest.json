@@ -1,0 +1,116 @@
+{
+  "status": "release",
+  "data_version": "v0.1",
+  "generated_at": "2026-11-19",
+  "window": [
+    1980,
+    2025
+  ],
+  "comparison_start": 2001,
+  "journals": [
+    {
+      "code": "JPART",
+      "name": "Journal of Public Administration Research and Theory",
+      "start": 1991,
+      "predecessor_until": null
+    },
+    {
+      "code": "PAR",
+      "name": "Public Administration Review",
+      "start": 1980,
+      "predecessor_until": null
+    },
+    {
+      "code": "PA",
+      "name": "Public Administration",
+      "start": 1980,
+      "predecessor_until": null
+    },
+    {
+      "code": "PMR",
+      "name": "Public Management Review",
+      "start": 1999,
+      "predecessor_until": 2000
+    },
+    {
+      "code": "GOV",
+      "name": "Governance",
+      "start": 1988,
+      "predecessor_until": null
+    }
+  ],
+  "counts": {
+    "papers": 10606,
+    "with_abstract": 8874,
+    "macro": 10,
+    "sub": 30,
+    "excluded": 4006
+  },
+  "params": {
+    "embed": {
+      "base_model": "allenai/specter2_base",
+      "adapter": "allenai/specter2",
+      "max_length": 512,
+      "min_abstract_words": 30
+    },
+    "cluster": {
+      "k_sub": 30,
+      "n_macro": 10,
+      "k_grid": [
+        30,
+        40,
+        50,
+        60
+      ],
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "stability": [
+        {
+          "k": 30,
+          "mean_ari": 0.5538
+        },
+        {
+          "k": 40,
+          "mean_ari": 0.5013
+        },
+        {
+          "k": 50,
+          "mean_ari": 0.4534
+        },
+        {
+          "k": 60,
+          "mean_ari": 0.4354
+        }
+      ]
+    },
+    "umap": {
+      "n_neighbors": 15,
+      "min_dist": 0.1,
+      "metric": "cosine",
+      "random_state": 42
+    }
+  },
+  "thresholds": {
+    "low_coverage_threshold": 0.5,
+    "min_denominator": 20
+  },
+  "sensitivity": {
+    "title_only_agreement_sub": 0.655,
+    "title_only_agreement_macro": 0.7142,
+    "title_only_agreement_sub_abstract_rows": 0.5877,
+    "title_only_agreement_macro_abstract_rows": 0.6584
+  },
+  "filter": {
+    "keep_types": [
+      "article",
+      "review"
+    ],
+    "min_pages": 4,
+    "par_practitioner_sections": "research_only"
+  }
+}

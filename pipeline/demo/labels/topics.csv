@@ -1,0 +1,61 @@
+level,id,macro,n,draft_label,label,description,reviewed
+macro,0,0,1369,satisfaction / service / countries,Public Service Motivation,Demo theme built from synthetic titles about public service motivation and job satisfaction.,no
+macro,1,1,1347,management / countries / states,Performance & Accountability,Demo theme built from synthetic titles about performance management and accountability.,no
+macro,2,2,1253,satisfaction / service / government,Citizen–State Interactions,Demo theme built from synthetic titles about citizen satisfaction and trust in government.,no
+macro,3,3,1083,governance / management / countries,Collaborative Governance & Networks,Demo theme built from synthetic titles about collaborative governance and policy networks.,no
+macro,4,4,964,bureaucracy / management / countries,Representation & Social Equity,Demo theme built from synthetic titles about representative bureaucracy and gender equity.,no
+macro,5,5,904,bureaucracy / reform / service,Bureaucracy & Political Control,Demo theme built from synthetic titles about political control of bureaucracy and civil service reform.,no
+macro,6,6,810,management / countries / states,Public Finance & Budgeting,Demo theme built from synthetic titles about budgeting and fiscal stress.,no
+macro,7,7,778,reform / management / countries,NPM & Public Sector Reform,Demo theme built from synthetic titles about new public management and public sector reform.,no
+macro,8,8,772,governance / agencies / countries,Regulation & Agencies,Demo theme built from synthetic titles about regulatory agencies and regulatory governance.,no
+macro,9,9,745,government / services / countries,Digital Government,Demo theme built from synthetic titles about digital government and e-government.,no
+sub,0,1,225,performance / information / targets,,,no
+sub,1,0,136,job / satisfaction / motivation,,,no
+sub,2,2,215,citizen / participation / street-level,,,no
+sub,3,3,153,co-production / cross-sector collaboration / partnerships,,,no
+sub,4,7,148,contracting / reform / post-npm,,,no
+sub,5,4,164,discrimination / equity / diversity management,,,no
+sub,6,6,161,stress / fiscal / budgeting,,,no
+sub,7,9,118,open data / intelligence / artificial,,,no
+sub,8,5,292,political / control bureaucracy / politicization,,,no
+sub,9,2,110,burden / administrative / citizen,,,no
+sub,10,1,483,tables / league / results-based management,,,no
+sub,11,8,383,compliance / independent regulators / risk regulation,,,no
+sub,12,2,219,trust / government citizen / government street-level,,,no
+sub,13,6,206,tax / debt / budgeting,,,no
+sub,14,0,237,employee / engagement / motivation,,,no
+sub,15,3,376,network management / cross-sector collaboration / co-production,,,no
+sub,16,4,171,equity / social / diversity management,,,no
+sub,17,7,229,reform / sector / post-npm,,,no
+sub,18,1,424,targets / accountability / performance,,,no
+sub,19,6,132,budgeting / participatory / debt,,,no
+sub,20,2,179,citizen / satisfaction / bureaucrats,,,no
+sub,21,4,310,inclusion / representative / bureaucracy,,,no
+sub,22,5,155,service reform / civil service / politicization,,,no
+sub,23,6,127,financial / management / budgeting,,,no
+sub,24,9,112,e-government / intelligence / artificial,,,no
+sub,25,4,154,equity / gender / discrimination,,,no
+sub,26,3,345,collaborative governance / partnerships / network,,,no
+sub,27,0,215,motivation / service / red,,,no
+sub,28,8,138,regulatory / governance / independent regulators,,,no
+sub,29,9,113,intelligence / artificial / digital government,,,no
+sub,30,9,126,platform services / services open / services algorithmic,,,no
+sub,31,9,125,algorithmic decision-making / e-government / open,,,no
+sub,32,0,89,job / satisfaction / motivation,,,no
+sub,33,8,251,regulatory / inspection / compliance,,,no
+sub,34,5,163,agency / autonomy / political,,,no
+sub,35,9,151,digital government / government algorithmic / government e-government,,,no
+sub,36,2,108,burden / administrative / citizen,,,no
+sub,37,5,136,ministerial advisers / political / control bureaucracy,,,no
+sub,38,3,209,policy / networks / partnerships,,,no
+sub,39,0,245,turnover intention / countries turnover / motivation,,,no
+sub,40,6,184,budgeting / debt / financial,,,no
+sub,41,1,215,performance / management / accountability,,,no
+sub,42,7,252,agencification / privatization / reform,,,no
+sub,43,4,165,diversity / management / equity,,,no
+sub,44,2,225,street-level / bureaucrats / citizen,,,no
+sub,45,5,158,senior executives / countries senior / executives politicization,,,no
+sub,46,0,225,motivation / work / engagement,,,no
+sub,47,0,222,tape / red / motivation,,,no
+sub,48,7,149,management / reform / contracting,,,no
+sub,49,2,197,service encounters / encounters citizen / countries service,,,no

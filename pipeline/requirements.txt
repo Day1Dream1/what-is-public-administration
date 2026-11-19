@@ -1,0 +1,12 @@
+# Python 3.12. Install into a virtual environment:
+#   python3.12 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
+# Use requirements.lock.txt to reproduce the tested macOS arm64 environment.
+requests>=2.32,<3
+numpy>=1.26,<3
+scipy>=1.13
+scikit-learn>=1.5,<1.8
+umap-learn>=0.5.6,<0.6
+# SPECTER2 distributes PyTorch weight files, which Transformers only loads with torch >=2.6.
+torch>=2.6
+# `adapters` pins a compatible `transformers` version itself — do not pin transformers separately.
+adapters>=1.1
