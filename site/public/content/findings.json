@@ -1,46 +1,147 @@
 {
   "status": "final",
   "data_version": "v0.1",
-  "kicker": "Findings",
-  "title": "What changed across five public administration journals?",
-  "dek": "Explore where topics gained or lost ground across {papers} papers and why some parts of the map are easier to interpret than others.",
-  "sections": [
+  "title": "How did public administration research change?",
+  "dek": "Follow five journals from the research map to a comparison of two five-year cohorts, then see which shifts hold when the inputs change.",
+  "periods": {
+    "early": [
+      2001,
+      2005
+    ],
+    "recent": [
+      2021,
+      2025
+    ]
+  },
+  "steps": [
     {
-      "vizTitle": "Five journals in one map",
-      "view": "map",
-      "steps": [
-        { "text": "<strong>How do the papers fit together?</strong> Every dot represents a paper. Nearby papers tend to use similar language in their titles and available abstracts. Colours mark groups fitted in the full embedding space.", "show": { "macros": "all" } },
-        { "text": "The <strong>10 broad groups</strong> cover recurring questions about governing, managing public organisations and delivering services. Read the labels as descriptions of the papers grouped together. A study can still speak to several topics.", "show": { "macros": "all" } }
-      ]
+      "id": "atlas",
+      "heading": "Read the map one paper at a time",
+      "text": "Each dot represents a research article or review from five journals published between 1980 and 2025. Nearby dots tend to share vocabulary. Colours mark ten groups of papers. The analysis used 8,874 available abstracts plus the titles of all 10,606 papers.",
+      "figure": "map",
+      "filter": {
+        "mode": "all"
+      }
     },
     {
-      "interlude": "Which topics gained a larger share?"
+      "id": "baseline",
+      "heading": "Start where all five journals overlap",
+      "text": "The five current journal titles share a publication window starting in 2001. The first five years contain 939 papers and 870 usable abstracts. The map shows that cohort at its original positions.",
+      "figure": "map",
+      "filter": {
+        "period": "early"
+      }
     },
     {
-      "vizTitle": "Topic share across the five current journals",
-      "view": "trend",
-      "window": [2001, 2025],
-      "steps": [
-        { "text": "Compare <strong>2001–2005</strong> with <strong>2021–2025</strong>. The earlier cohort contains 939 papers with 93% usable abstract coverage. The later cohort contains 2,016 papers with 98% coverage. Each plotted point pools nearby years to show the longer pattern.", "show": { "macros": "all" } },
-        { "text": "{theme:3} rose from <strong>84 of 939 papers (8.9%)</strong> to <strong>382 of 2,016 (18.9%)</strong>. Its share increased in every journal. The pooled rise also appears using title-only assignments (+8.0 percentage points) and among papers with usable abstracts (+9.7).", "show": { "macros": [3] } },
-        { "text": "{theme:1} rose from <strong>78 papers (8.3%)</strong> to <strong>322 (16.0%)</strong>. The pooled rise persists with title-only assignments (+6.5 percentage points) and with the abstract-bearing subset (+7.6).", "show": { "macros": [1] } },
-        { "text": "{theme:0} moved in the other direction, from <strong>248 papers (26.4%)</strong> to <strong>143 (7.1%)</strong>. Its share fell in all five journals. The magnitude depends on the input, with a fall of 12.3 points using titles and 20.6 among papers with abstracts.", "show": { "macros": [0] } }
-      ]
+      "id": "recent",
+      "heading": "Move the same map forward twenty years",
+      "text": "The recent five-year cohort contains 2,016 papers and 1,978 usable abstracts. With more than twice as many papers, topic shares tell us how the mix changed even as publication volume grew.",
+      "figure": "map",
+      "filter": {
+        "period": "recent"
+      }
     },
     {
-      "interlude": "Where does the map need closer reading?"
+      "id": "reform-decline",
+      "heading": "The early leader lost share",
+      "text": "Comparative Governance and Administrative Reform was the largest group in 2001–2005, at 26.4% of the cohort. Its share fell to 7.1% in 2021–2025. This direction appears within each of the five journals.",
+      "figure": "bar",
+      "compare": {
+        "macros": [
+          0
+        ],
+        "focus": 0
+      }
     },
     {
-      "vizTitle": "A mixed group with short records",
-      "view": "map",
-      "steps": [
-        { "text": "{theme:8} gathers 678 mixed records, of which 170 have a usable abstract. Some title-only papers group together because of generic wording. Follow their source links before interpreting them as a coherent research area.", "show": { "macros": [8] } },
-        { "text": "Across the map, using titles alone and assigning papers to the same fitted groups reproduces <strong>71% of broad group assignments</strong>. Among papers that originally had an abstract, agreement is <strong>66%</strong>. The period comparisons above use patterns that retain their direction under both sensitivity checks.", "show": { "macros": "all" } }
-      ]
+      "id": "collab-rise",
+      "heading": "Collaboration gained ground in all five journals",
+      "text": "Collaborative Governance and Citizen Participation rose from 8.9% to 18.9% of papers. The increase appears within every journal, alongside the shift in the pooled comparison.",
+      "figure": "bar",
+      "compare": {
+        "macros": [
+          0,
+          3
+        ],
+        "focus": 3
+      }
+    },
+    {
+      "id": "workforce-rise",
+      "heading": "Workforce research rose, too",
+      "text": "Public Workforces, Leadership and Representation went from 8.3% to 16.0%. The two rising themes together account for 704 of the 2,016 recent papers, just under 35%.",
+      "figure": "bar",
+      "compare": {
+        "macros": [
+          0,
+          3,
+          1
+        ],
+        "focus": 1
+      }
+    },
+    {
+      "id": "robustness",
+      "heading": "The direction persists across inputs",
+      "text": "The same directions appear when titles alone are assigned to the fitted topic groups and when the original assignments are restricted to papers with usable abstracts. The estimated size of each shift varies.",
+      "figure": "table",
+      "sensitivity": {
+        "rows": [
+          {
+            "label": "Comparative Governance",
+            "macro": 0,
+            "main": -19.3,
+            "title_only": -12.3,
+            "with_abstract": -20.6
+          },
+          {
+            "label": "Collaboration & Participation",
+            "macro": 3,
+            "main": 10.0,
+            "title_only": 8.0,
+            "with_abstract": 9.7
+          },
+          {
+            "label": "Workforce & Representation",
+            "macro": 1,
+            "main": 7.7,
+            "title_only": 6.5,
+            "with_abstract": 7.6
+          }
+        ]
+      }
+    },
+    {
+      "id": "conclusion",
+      "heading": "The journals changed what they emphasised",
+      "text": "Between 2001–2005 and 2021–2025, these five journals devoted a larger share of papers to collaboration, participation and public workforces, and a smaller share to comparative governance and administrative reform. This describes changes in the mix of published research under the atlas’s topic model.",
+      "figure": "bar",
+      "compare": {
+        "macros": [
+          0,
+          3,
+          1
+        ]
+      }
     }
   ],
   "end": {
     "kicker": "Explore the evidence",
-    "title": "Follow a topic to the papers behind it"
+    "title": "Follow a topic to the papers behind it",
+    "links": [
+      {
+        "label": "Open the map",
+        "href": "#/explore",
+        "primary": true
+      },
+      {
+        "label": "Trends",
+        "href": "#/trends"
+      },
+      {
+        "label": "Data & Methods",
+        "href": "#/methods"
+      }
+    ]
   }
 }

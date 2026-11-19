@@ -1,154 +1,225 @@
-// Scrollytelling page: a sticky chart with step cards scrolling over it (pattern from What is Strategy?).
-// Content lives in site/public/content/findings.json so findings can be written without touching code.
-import * as d3 from "d3";
-import { denominators, esc, fmt } from "../data.js";
+import { esc, fmt, pct } from "../data.js";
 import { createMap } from "../map.js";
+
+function summarise(papers, [start, end]) {
+  const counts = new Map();
+  let total = 0;
+  for (const paper of papers) {
+    if (paper.year < start || paper.year > end) continue;
+    counts.set(paper.macro, (counts.get(paper.macro) || 0) + 1);
+    total++;
+  }
+  return { start, end, counts, total };
+}
+
+const span = ({ start, end }) => `${start}–${end}`;
+const shortSpan = ({ start, end }) => `${start}–${String(end).slice(-2)}`;
+const signed = (value) => `${value > 0 ? "+" : value < 0 ? "−" : ""}${Math.abs(value).toFixed(1)}`;
 
 export function render(root, D) {
   const F = D.findings;
-  if (!F) {
-    root.innerHTML = `<div class="container section"><h1 class="title">Findings</h1><p class="muted">No findings file (content/findings.json) found.</p></div>`;
-    return;
-  }
-  if (D.manifest.status === "release" && F.status !== "final") {
+  if (D.manifest.status !== "release" || F?.status !== "final" ||
+      F.data_version !== D.manifest.data_version || !F.steps?.length || !F.periods) {
     root.innerHTML = `<section class="section"><div class="container prose">
       <h1 class="title">Findings</h1>
-      <p>The narrative findings are in review. Explore the paper map and the data behind the trends.</p>
+      <p>The narrative findings for this data version are in review.</p>
       <p><a class="btn" href="#/trends">Explore trends</a> <a class="btn btn-ghost" href="#/methods">Data &amp; Methods</a></p>
     </div></section>`;
     return;
   }
-  const fill = (s) => String(s)
-    .replace(/\{papers\}/g, fmt(D.papers.length))
-    .replace(/\{themes\}/g, D.topics.macro.length)
-    .replace(/\{journals\}/g, D.manifest.journals.length)
-    .replace(/\{theme:(\d+)\}/g, (_, id) => { const t = D.macroById.get(+id); return t ? `<strong style="color:${t.color}">${esc(t.label)}</strong>` : "?"; });
 
-  let stepNo = 0;
+  const steps = F.steps;
+  const early = summarise(D.papers, F.periods.early);
+  const recent = summarise(D.papers, F.periods.recent);
+  const periods = { early, recent };
+  const topics = new Set(steps.flatMap((step) => step.compare?.macros || []));
+  const maxShare = Math.max(...[early, recent].flatMap((period) =>
+    [...topics].map((id) => (period.counts.get(id) || 0) / period.total)));
+  const shareScale = Math.max(0.30, Math.ceil(maxShare * 10) / 10);
+
   root.innerHTML = `
-  <section class="hero"><div class="container hero-inner" style="padding:56px 0 48px">
-    <p class="kicker">${esc(F.kicker || "Findings")}</p>
-    <h1 class="title">${esc(F.title)}</h1>
-    <p class="dek">${fill(F.dek || "")}</p>
-    ${F.status !== "final" ? `<p class="warn" style="margin-top:20px;max-width:680px">Draft. These findings will be written after the full corpus passes the coverage and sensitivity checks described in Data &amp; Methods.</p>` : ""}
-  </div></section>
-  ${F.sections.map((s, si) => s.interlude
-    ? `<div class="interlude" data-interlude><div class="q"><p>${fill(s.interlude)}</p></div></div>`
-    : `<section class="story" data-sec="${si}">
-        <div class="story-sticky"><div class="viz-bar"><span class="vt">${esc(s.vizTitle || "")}</span><span class="vy" data-year></span></div>
-          <div class="viz"></div><div class="progress-dots">${s.steps.map(() => "<i></i>").join("")}</div></div>
-        <div class="steps">${s.steps.map((st, i) => `<div class="step" data-step="${i}"><div class="step-card"><span class="n">${String(++stepNo).padStart(2, "0")}</span>${fill(st.text)}</div></div>`).join("")}</div>
-      </section>`).join("")}
-  <div class="upnext">
-    <p class="kicker-sm">${esc(F.end?.kicker || "You've reached the end")}</p>
-    <h2>${esc(F.end?.title || "Explore the data yourself")}</h2>
-    <a class="btn" href="#/explore">Open the map →</a>
-    <div class="links"><a href="#/trends">Trends</a><span>·</span><a href="#/methods">Data &amp; Methods</a></div>
-  </div>`;
+    <header class="scroll-chapter-header">
+      <p class="kicker">Findings · Five journals</p>
+      <h1 class="title">${esc(F.title)}</h1>
+      <p class="dek">${esc(F.dek)}</p>
+      <button type="button" class="btn btn-ghost" id="story-start">Start with the map</button>
+    </header>
+    <article class="scroll-story" aria-label="Findings chapter">
+      <div class="scroll-stage">
+        <header class="stage-header">
+          <h2 id="stage-title"></h2>
+          <p id="stage-context"></p>
+        </header>
+        <div class="stage-figure" aria-labelledby="stage-title">
+          <div class="stage-map"></div>
+          <div class="stage-overlay" hidden></div>
+        </div>
+        <nav class="scroll-nav" aria-label="Chapter steps">
+          <button type="button" class="scroll-nav-btn" id="nav-prev">Previous</button>
+          <span class="scroll-nav-label" id="nav-label"></span>
+          <button type="button" class="scroll-nav-btn" id="nav-next">Next</button>
+        </nav>
+      </div>
+      <div class="scroll-article">
+        ${steps.map((step, i) => `
+          <section class="scroll-step" aria-labelledby="step-heading-${i}" id="step-${esc(step.id)}">
+            <div class="scroll-step-inner">
+              <h2 class="scroll-heading" id="step-heading-${i}">${esc(step.heading)}</h2>
+              <p class="scroll-body">${esc(step.text)}</p>
+            </div>
+          </section>`).join("")}
+      </div>
+    </article>
+    <section class="scroll-end">
+      <p class="kicker-sm">${esc(F.end.kicker)}</p>
+      <h2>${esc(F.end.title)}</h2>
+      <div class="scroll-end-links">${F.end.links.map((link) =>
+        `<a class="btn${link.primary ? "" : " btn-ghost"}" href="${esc(link.href)}">${esc(link.label)}</a>`
+      ).join("")}</div>
+    </section>`;
 
-  const cleanups = [];
-  root.querySelectorAll(".story").forEach((secEl) => {
-    const s = F.sections[+secEl.dataset.sec];
-    const viz = secEl.querySelector(".viz");
-    const yearEl = secEl.querySelector("[data-year]");
-    let setStep;
-    if (s.view === "trend") {
-      viz.innerHTML = `<div class="trend-viz chart"><div style="width:100%;height:100%"></div></div>`;
-      const trend = trendView(viz.firstChild.firstChild, D, s, yearEl);
-      setStep = trend.setStep;
-      cleanups.push(trend.destroy);
-    } else {
-      const map = createMap(viz, D, { interactive: false, labels: "macro", pointRadius: 2 });
-      cleanups.push(() => map.destroy());
-      setStep = (show) => {
-        const macros = !show.macros || show.macros === "all" ? null : new Set(show.macros);
-        map.setStory({ macros, yearMax: show.yearMax ?? null });
-        yearEl.textContent = show.yearMax ?? D.manifest.window[1];
-      };
-    }
-    const cards = secEl.querySelectorAll(".step-card"), dots = secEl.querySelectorAll(".progress-dots i");
-    const activate = (i) => {
-      cards.forEach((c, k) => c.classList.toggle("active", k === i));
-      dots.forEach((d, k) => d.classList.toggle("on", k === i));
-      setStep(s.steps[i].show || {});
-    };
-    activate(0);
-    const io = new IntersectionObserver((entries) => {
-      for (const e of entries) if (e.isIntersecting) activate(+e.target.dataset.step);
-    }, { rootMargin: "-45% 0px -45% 0px" });
-    secEl.querySelectorAll(".step").forEach((el) => io.observe(el));
-    cleanups.push(() => io.disconnect());
-  });
+  const story = root.querySelector(".scroll-story");
+  const stage = story.querySelector(".scroll-stage");
+  const mapContainer = stage.querySelector(".stage-map");
+  const overlay = stage.querySelector(".stage-overlay");
+  const stageTitle = stage.querySelector("#stage-title");
+  const stageContext = stage.querySelector("#stage-context");
+  const status = stage.querySelector("#nav-label");
+  const previous = stage.querySelector("#nav-prev");
+  const next = stage.querySelector("#nav-next");
+  const sections = Array.from(story.querySelectorAll(".scroll-step"));
+  const passages = sections.map((section) => section.querySelector(".scroll-step-inner"));
+  const map = createMap(mapContainer, D, { interactive: false, labels: false, pointRadius: 1.6 });
 
-  // interludes fade in and out with scroll progress
-  const inter = [...root.querySelectorAll("[data-interlude]")];
-  const onScroll = () => {
-    for (const el of inter) {
-      const r = el.getBoundingClientRect();
-      const prog = -r.top / Math.max(1, r.height - innerHeight);
-      const o = prog < 0 ? Math.max(0, 1 + prog * 3) : prog > 1 ? Math.max(0, 1 - (prog - 1) * 3) : 1;
-      el.querySelector("p").style.opacity = o.toFixed(2);
-    }
-  };
-  addEventListener("scroll", onScroll, { passive: true });
-  onScroll();
-  cleanups.push(() => removeEventListener("scroll", onScroll));
-  return () => cleanups.forEach((f) => f());
-}
-
-// Line chart of theme shares; steps choose which themes are emphasised.
-function trendView(el, D, sec, yearEl) {
-  let [y0, y1] = D.manifest.window;
-  if (Array.isArray(sec.window) && sec.window.length === 2 && sec.window.every(Number.isInteger)) {
-    const start = Math.max(y0, sec.window[0]);
-    const end = Math.min(y1, sec.window[1]);
-    if (start <= end) [y0, y1] = [start, end];
+  function showMap(step) {
+    const period = periods[step.filter?.period];
+    mapContainer.hidden = false;
+    overlay.hidden = true;
+    overlay.replaceChildren();
+    map.setStory(period ? { cohortMin: period.start, cohortMax: period.end } : null);
+    stageTitle.textContent = period ? `Papers from ${span(period)}` : "The research map";
+    stageContext.textContent = period ? `${fmt(period.total)} highlighted papers` :
+      `${fmt(D.papers.length)} papers · ${D.topics.macro.length} themes`;
   }
-  const years = d3.range(y0, y1 + 1);
-  const { den } = denominators(D, D.jcodes, y0, y1);
-  const cnt = d3.rollup(D.papers, (v) => v.length, (p) => p.macro, (p) => p.year);
-  const series = D.topics.macro.map((t) => {
-    const per = cnt.get(t.id) || new Map();
-    const v = years.map((y, i) => {
-      const w = years.slice(Math.max(0, i - 1), i + 2);
-      const d = d3.sum(w, (yy) => den.get(yy) || 0);
-      return d ? d3.sum(w, (yy) => per.get(yy) || 0) / d : null;
+
+  function barLine(period, id, color) {
+    const n = period.counts.get(id) || 0;
+    const share = n / period.total;
+    return `<div class="bar-track${period === early ? " bar-track--early" : ""}">
+      <span class="bar-era">${shortSpan(period)}</span>
+      <span class="bar-measure" aria-hidden="true"><span class="bar-fill" style="width:${(share / shareScale * 100).toFixed(2)}%;background:${esc(color)}"></span></span>
+      <span class="bar-val"><strong>${pct(share, 1)}</strong> <span>${fmt(n)} / ${fmt(period.total)}</span></span>
+    </div>`;
+  }
+
+  function showComparison({ compare }) {
+    stageTitle.textContent = "Share of papers by theme";
+    stageContext.textContent = `Five journals · common scale 0–${pct(shareScale, 0)}`;
+    overlay.innerHTML = `<div class="bar-figure">${compare.macros.map((id) => {
+      const topic = D.macroById.get(id);
+      const color = topic?.color || "#888";
+      const delta = ((recent.counts.get(id) || 0) / recent.total - (early.counts.get(id) || 0) / early.total) * 100;
+      return `<div class="bar-row${id === compare.focus ? " bar-row--new" : ""}">
+        <div class="bar-row-heading">
+          <h3 class="bar-label"><span class="story-dot" aria-hidden="true" style="background:${esc(color)}"></span>${esc(topic?.label || "Unknown theme")}</h3>
+          <span class="bar-delta ${delta > 0 ? "sens-up" : "sens-down"}">${signed(delta)} pp</span>
+        </div>
+        ${barLine(early, id, color)}
+        ${barLine(recent, id, color)}
+      </div>`;
+    }).join("")}</div>`;
+  }
+
+  function showSensitivity({ sensitivity }) {
+    stageTitle.textContent = "Testing the direction of change";
+    stageContext.textContent = "Difference in percentage points";
+    overlay.innerHTML = `<div class="table-figure">
+      <table class="sens-table" aria-label="Percentage-point changes under three checks">
+        <thead><tr><th scope="col">Theme</th><th scope="col">Full corpus</th>
+          <th scope="col">Titles only</th><th scope="col">With abstract</th></tr></thead>
+        <tbody>${sensitivity.rows.map((row) => `
+          <tr><th scope="row">${esc(row.label)}</th>
+            ${[row.main, row.title_only, row.with_abstract].map((v) =>
+              `<td class="${v > 0 ? "sens-up" : "sens-down"}">${signed(v)}</td>`
+            ).join("")}
+          </tr>`).join("")}</tbody>
+      </table>
+      <p class="sens-note">The direction of each shift holds across all three checks.</p>
+    </div>`;
+  }
+
+  let current = -1;
+  function activate(index) {
+    if (index === current) return;
+    current = index;
+    const step = steps[index];
+    sections.forEach((section, i) => {
+      section.classList.toggle("scroll-step--active", i === index);
+      if (i === index) section.setAttribute("aria-current", "step");
+      else section.removeAttribute("aria-current");
     });
-    return { t, v };
-  });
-  let current = null;
-  function draw() {
-    const W = el.clientWidth || 800, H = Math.max(260, el.clientHeight || 500);
-    const endLabels = W >= 520;
-    const mg = { t: 16, r: endLabels ? 150 : 14, b: 30, l: 44 };
-    const x = d3.scaleLinear([y0, y1], [mg.l, W - mg.r]);
-    const y = d3.scaleLinear([0, d3.max(series, (s) => d3.max(s.v)) || 1], [H - mg.b, mg.t]).nice();
-    const svg = d3.create("svg").attr("viewBox", `0 0 ${W} ${H}`).attr("width", W).attr("height", H).attr("role", "img")
-      .attr("aria-label", `Share of mapped papers per theme, ${y0}–${y1}`);
-    svg.append("g").attr("transform", `translate(${mg.l},0)`).call(d3.axisLeft(y).ticks(5).tickFormat(d3.format(".0%")).tickSize(-(W - mg.l - mg.r)))
-      .call((g) => g.select(".domain").remove()).call((g) => g.selectAll("line").attr("stroke", "#f0f0f0"));
-    svg.append("g").attr("transform", `translate(0,${H - mg.b})`).call(d3.axisBottom(x).ticks(endLabels ? 8 : 4).tickFormat(d3.format("d")).tickSize(0))
-      .call((g) => g.select(".domain").attr("stroke", "#e5e5e5")).selectAll("text").attr("dy", "1.2em");
-    const line = d3.line().defined((d) => d != null).x((d, i) => x(years[i])).y((d) => y(d)).curve(d3.curveMonotoneX);
-    const on = current?.macros && current.macros !== "all" ? new Set(current.macros) : null;
-    const g = svg.append("g");
-    for (const s of [...series].sort((a, b) => (on?.has(a.t.id) ?? true) - (on?.has(b.t.id) ?? true))) {
-      const hi = !on || on.has(s.t.id);
-      g.append("path").attr("d", line(s.v)).attr("fill", "none").attr("stroke", hi ? s.t.color : "#d4d4d4")
-        .attr("stroke-width", hi && on ? 2.6 : 1.4).attr("opacity", hi ? 1 : 0.6).style("transition", "all .4s");
-      if (hi && on && endLabels) {
-        const li = s.v.findLastIndex((d) => d != null);
-        if (li >= 0) g.append("text").attr("x", x(years[li]) + 6).attr("y", y(s.v[li])).attr("dy", "0.35em")
-          .style("fill", s.t.color).style("font-size", "12px").style("font-weight", 600).text(s.t.label.length > 22 ? s.t.label.slice(0, 21) + "…" : s.t.label);
-      }
+    if (step.figure === "map") {
+      showMap(step);
+    } else {
+      mapContainer.hidden = true;
+      overlay.hidden = false;
+      if (step.figure === "bar") showComparison(step);
+      else showSensitivity(step);
     }
-    el.replaceChildren(svg.node());
+    status.textContent = `${index + 1} / ${steps.length}`;
+    previous.setAttribute("aria-disabled", String(index === 0));
+    next.setAttribute("aria-disabled", String(index === steps.length - 1));
   }
-  const observer = new ResizeObserver(draw);
-  observer.observe(el);
-  yearEl.textContent = `${y0}–${y1}`;
-  return {
-    setStep(show) { current = show; draw(); },
-    destroy() { observer.disconnect(); },
+
+  const tabbar = document.querySelector(".tabbar");
+  const readingLine = () => {
+    const available = innerHeight - (tabbar?.offsetHeight || 0);
+    const stacked = stage.offsetWidth >= story.clientWidth - 2;
+    return stacked ? (available + Math.min(stage.offsetHeight + 8, available * 0.65)) / 2 : available / 2;
+  };
+  const midpoint = (el) => {
+    const rect = el.getBoundingClientRect();
+    return rect.top + rect.height / 2;
+  };
+  let frame = 0;
+  function scheduleUpdate() {
+    if (frame) return;
+    frame = requestAnimationFrame(() => {
+      frame = 0;
+      const line = readingLine();
+      let index = 0;
+      let nearest = Infinity;
+      passages.forEach((p, i) => {
+        const distance = Math.abs(midpoint(p) - line);
+        if (distance < nearest) {
+          index = i;
+          nearest = distance;
+        }
+      });
+      activate(index);
+    });
+  }
+
+  function scrollToStep(index) {
+    if (index < 0 || index >= steps.length) return;
+    window.scrollTo({
+      top: window.scrollY + midpoint(passages[index]) - readingLine(),
+      behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+    });
+  }
+
+  previous.addEventListener("click", () => scrollToStep(current - 1));
+  next.addEventListener("click", () => scrollToStep(current + 1));
+  root.querySelector("#story-start").addEventListener("click", () => scrollToStep(0));
+  addEventListener("scroll", scheduleUpdate, { passive: true });
+  addEventListener("resize", scheduleUpdate);
+  activate(0);
+  scheduleUpdate();
+
+  return () => {
+    removeEventListener("scroll", scheduleUpdate);
+    removeEventListener("resize", scheduleUpdate);
+    cancelAnimationFrame(frame);
+    map.destroy();
   };
 }

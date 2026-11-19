@@ -91,9 +91,9 @@ python -m pa_map cluster
 
 编辑 `site/public/content/findings.json`：
 
-- `{theme:N}` 会显示为带颜色的主题名，N 是 `topics.csv` 中宏观主题的 id。
-- 每个 step 的 `show` 控制图表状态：`macros` 填 `"all"` 或 id 列表，`yearMax` 控制地图显示到哪一年。
-- 确定文案后把 `status` 设为 `final`，`data_version` 与导出版本保持一致。
+- `steps` 按阅读顺序排列。每步用 `heading` 和 `text` 解释一个问题，用 `figure` 选择地图、对比图或敏感性表。
+- 地图步骤用 `filter.period` 选择 `periods` 中的时间窗。对比步骤在 `compare.macros` 中按揭示顺序列出主题 ID，两个五年组的篇数和分母由网站随数据计算。
+- 更新数据时复核叙事中的数字、主题名和敏感性表。定稿后将 `status` 设为 `final`，并让 `data_version` 与导出版本一致。
 
 ```bash
 cd ../site

@@ -20,12 +20,15 @@ export function createMap(container, D, opts = {}) {
   let W = 0, H = 0, dpr = 1, sx = new Float32Array(P.length), sy = new Float32Array(P.length);
   let t = d3.zoomIdentity, qt = null;
   let mask = null;                 // Uint8Array, 1 = matches filters
-  let story = null;                // {macros:Set|null, yearMax:number|null}
+  let story = null;                // Optional theme, year cutoff, and highlighted cohort.
   let selected = null, hovered = null, focusOnLayout = false;
   let projection = null;
   const color = (m) => D.macroById.get(m)?.color || "#888";
-  const visible = (i) => !story || story.yearMax == null || P[i].year <= story.yearMax;
-  const active = (i) => (!mask || mask[i]) && (!story || !story.macros || story.macros.has(P[i].macro));
+  const visible = (i) => story?.yearMax == null || P[i].year <= story.yearMax;
+  const active = (i) => (!mask || mask[i]) &&
+    (!story?.macros || story.macros.has(P[i].macro)) &&
+    (story?.cohortMin == null || P[i].year >= story.cohortMin) &&
+    (story?.cohortMax == null || P[i].year <= story.cohortMax);
 
   function rebuildIndex() {
     if (!interactive || !projection) return;

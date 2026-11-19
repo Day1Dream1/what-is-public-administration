@@ -1,6 +1,5 @@
 import { SITE } from "../config.js";
 import { esc, fmt, pct } from "../data.js";
-import { ICON } from "../icons.js";
 import { createMap } from "../map.js";
 
 export function render(root, D) {
@@ -11,12 +10,16 @@ export function render(root, D) {
   <section class="hero"><div class="container hero-inner">
     <p class="kicker">An empirical field map · ${m.window[0]}–${m.window[1]}</p>
     <h1 class="title">What is Public Administration?</h1>
-    <p class="dek">A map of ${fmt(n)} research articles from five leading public administration journals: ${D.topics.macro.length} themes, ${D.topics.sub.length} subtopics and ${years} years of scholarship.</p>
+    <p class="dek">An empirical map of ${fmt(n)} papers across ${m.journals.length} public administration journals and ${years} years of scholarship.</p>
     <div class="stats">
       <div class="stat"><b class="num">${fmt(n)}</b><span>papers</span></div>
       <div class="stat"><b class="num">${m.journals.length}</b><span>journals</span></div>
       <div class="stat"><b class="num">${D.topics.macro.length}</b><span>themes</span></div>
       <div class="stat"><b class="num">${years}</b><span>years</span></div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:28px">
+      <a class="btn" href="#/findings">Read the findings</a>
+      <a class="btn btn-ghost" href="#/explore">Explore the map</a>
     </div>
   </div></section>
 
@@ -28,7 +31,6 @@ export function render(root, D) {
       Papers about similar things sit close together.</p>
       <p>The map is built from each paper's title and, where one is available, its abstract (${pct(absShare, 0)} of papers have one).
       Every chart shows how many papers it is based on, so you can judge for yourself how much weight a trend can bear.</p>
-      <p><a class="btn" href="#/explore">Open the map ${ICON.arrow.replace("<svg", '<svg width="16" height="16"')}</a></p>
     </div>
     <a href="#/explore" aria-label="Open the interactive map" style="display:block;position:relative;height:380px;border:1px solid var(--border);border-radius:16px;overflow:hidden" id="preview"></a>
   </div></section>
@@ -37,7 +39,7 @@ export function render(root, D) {
     <h2 class="section-title">Four ways in</h2>
     <p class="section-sub">Read the findings, or explore the data and check how it was built.</p>
     <div class="cards">
-      ${card("#/findings", "Read", "Findings", "What the five journals show, one question at a time, with the chart beside the text.")}
+      ${card("#/findings", "Read", "Findings", "How research priorities shifted across five journals, told one step at a time with the evidence beside the text.")}
       ${card("#/explore", "Explore", "The map", "Find papers by journal, year, theme, title, author or DOI, and share a link to any paper.")}
       ${card("#/trends", "Explore", "Trends", "How each theme grew or shrank, and how the five journals compare since 2001.")}
       ${card("#/methods", "About", "Data & Methods", "Which papers are in, how themes were made, coverage by journal and year, and limitations.")}
