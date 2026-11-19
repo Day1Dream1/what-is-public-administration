@@ -1,6 +1,7 @@
 import { SITE } from "../config.js";
 import { esc, fmt, pct } from "../data.js";
 import { createMap } from "../map.js";
+import { CHAPTERS, chapterHref, chapterList } from "../chapters.js";
 
 export function render(root, D) {
   const m = D.manifest, n = D.papers.length;
@@ -18,7 +19,7 @@ export function render(root, D) {
       <div class="stat"><b class="num">${years}</b><span>years</span></div>
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:28px">
-      <a class="btn" href="#/findings">Read the findings</a>
+      <a class="btn" href="${chapterHref(CHAPTERS[0].id)}">Start chapter 1</a>
       <a class="btn btn-ghost" href="#/explore">Explore the map</a>
     </div>
   </div></section>
@@ -36,14 +37,8 @@ export function render(root, D) {
   </div></section>
 
   <section class="section"><div class="container">
-    <h2 class="section-title">Four ways in</h2>
-    <p class="section-sub">Read the findings, or explore the data and check how it was built.</p>
-    <div class="cards">
-      ${card("#/findings", "Read", "Findings", "How research priorities shifted across five journals, told one step at a time with the evidence beside the text.")}
-      ${card("#/explore", "Explore", "The map", "Find papers by journal, year, theme, title, author or DOI, and share a link to any paper.")}
-      ${card("#/trends", "Explore", "Trends", "How each theme grew or shrank, and how the five journals compare since 2001.")}
-      ${card("#/methods", "About", "Data & Methods", "Which papers are in, how themes were made, coverage by journal and year, and limitations.")}
-    </div>
+    <h2 class="section-title">Chapters</h2>
+    ${chapterList()}
   </div></section>
   <footer class="site">Created by ${SITE.authorUrl ? `<a href="${esc(SITE.authorUrl)}">${esc(SITE.author)}</a>` : esc(SITE.author)}${SITE.affiliation ? `, ${esc(SITE.affiliation)}` : ""} · Data ${esc(m.data_version)} · <a href="#/methods">Data &amp; Methods</a></footer>`;
 
@@ -54,6 +49,3 @@ export function render(root, D) {
   const map = createMap(root.querySelector("#preview"), D, { interactive: false, pointRadius: 1.6 });
   return () => { map.destroy(); mq.removeEventListener("change", apply); };
 }
-
-const card = (href, kick, title, text) =>
-  `<a class="card" href="${href}"><span class="kicker-sm">${kick}</span><h3>${title}</h3><p>${text}</p></a>`;

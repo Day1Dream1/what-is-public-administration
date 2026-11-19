@@ -1,5 +1,7 @@
 import { esc, fmt, pct } from "../data.js";
 import { createMap } from "../map.js";
+import { CHAPTERS, chapterHref } from "../chapters.js";
+import { SIGNALS, chapterEvidence, chapterFigure } from "../chapter-evidence.js";
 
 function summarise(papers, [start, end]) {
   const counts = new Map();
@@ -16,10 +18,13 @@ const span = ({ start, end }) => `${start}–${end}`;
 const shortSpan = ({ start, end }) => `${start}–${String(end).slice(-2)}`;
 const signed = (value) => `${value > 0 ? "+" : value < 0 ? "−" : ""}${Math.abs(value).toFixed(1)}`;
 
-export function render(root, D) {
-  const F = D.findings;
-  if (D.manifest.status !== "release" || F?.status !== "final" ||
-      F.data_version !== D.manifest.data_version || !F.steps?.length || !F.periods) {
+export function render(root, D, chapterId = "field-map") {
+  const chapterIndex = CHAPTERS.findIndex(({ id }) => id === chapterId);
+  const isFirst = chapterId === "field-map";
+  const source = isFirst ? D.findings : D.chapterContent;
+  const F = isFirst ? source : source?.chapters?.find(({ id }) => id === chapterId);
+  if (D.manifest.status !== "release" || source?.status !== "final" ||
+      source.data_version !== D.manifest.data_version || !F?.steps?.length || (isFirst && !F.periods)) {
     root.innerHTML = `<section class="section"><div class="container prose">
       <h1 class="title">Findings</h1>
       <p>The narrative findings for this data version are in review.</p>
@@ -29,22 +34,35 @@ export function render(root, D) {
   }
 
   const steps = F.steps;
-  const early = summarise(D.papers, F.periods.early);
-  const recent = summarise(D.papers, F.periods.recent);
+  const early = F.periods && summarise(D.papers, F.periods.early);
+  const recent = F.periods && summarise(D.papers, F.periods.recent);
   const periods = { early, recent };
   const topics = new Set(steps.flatMap((step) => step.compare?.macros || []));
-  const maxShare = Math.max(...[early, recent].flatMap((period) =>
+  const maxShare = Math.max(0, ...[early, recent].filter(Boolean).flatMap((period) =>
     [...topics].map((id) => (period.counts.get(id) || 0) / period.total)));
   const shareScale = Math.max(0.30, Math.ceil(maxShare * 10) / 10);
+  const evidence = isFirst ? null : chapterEvidence(D);
+  const scaleSignals = [...new Set(steps.filter((step) => step.figure === "signals").flatMap((step) => step.signals))];
+  const nextChapter = CHAPTERS[chapterIndex + 1];
+  const priorChapter = CHAPTERS[chapterIndex - 1];
+  const needsMap = steps.some((step) => step.figure === "map");
+
+  const paperLink = (id) => {
+    const paper = D.byId.get(id);
+    return !paper ? "" : `<p class="chapter-source"><a href="#/explore?paper=${encodeURIComponent(paper.id)}">${esc(paper.title)}</a>
+      <span>${paper.year} · ${esc(paper.journal)}</span></p>`;
+  };
+  const stepLink = (link) => link?.href?.startsWith("#/")
+    ? `<p class="chapter-source"><a href="${esc(link.href)}">${esc(link.label)}</a></p>` : "";
 
   root.innerHTML = `
     <header class="scroll-chapter-header">
-      <p class="kicker">Findings · Five journals</p>
+      <p class="kicker"><a href="#/chapters">Chapters</a> · ${chapterIndex + 1} of ${CHAPTERS.length}</p>
       <h1 class="title">${esc(F.title)}</h1>
       <p class="dek">${esc(F.dek)}</p>
-      <button type="button" class="btn btn-ghost" id="story-start">Start with the map</button>
+      <button type="button" class="btn btn-ghost" id="story-start">${steps[0].figure === "map" ? "Start with the map" : "Start reading"}</button>
     </header>
-    <article class="scroll-story" aria-label="Findings chapter">
+    <article class="scroll-story" aria-label="Chapter evidence">
       <div class="scroll-stage">
         <header class="stage-header">
           <h2 id="stage-title"></h2>
@@ -66,16 +84,19 @@ export function render(root, D) {
             <div class="scroll-step-inner">
               <h2 class="scroll-heading" id="step-heading-${i}">${esc(step.heading)}</h2>
               <p class="scroll-body">${esc(step.text)}</p>
+              ${paperLink(step.paperId)}${stepLink(step.link)}
             </div>
           </section>`).join("")}
       </div>
     </article>
     <section class="scroll-end">
-      <p class="kicker-sm">${esc(F.end.kicker)}</p>
-      <h2>${esc(F.end.title)}</h2>
-      <div class="scroll-end-links">${F.end.links.map((link) =>
-        `<a class="btn${link.primary ? "" : " btn-ghost"}" href="${esc(link.href)}">${esc(link.label)}</a>`
-      ).join("")}</div>
+      <p class="kicker-sm">${nextChapter ? `Chapter ${chapterIndex + 2} of ${CHAPTERS.length}` : "Explore the evidence"}</p>
+      <h2>${esc(nextChapter?.label || "Follow a topic to the papers behind it")}</h2>
+      <div class="scroll-end-links">
+        ${priorChapter ? `<a class="btn btn-ghost" href="${chapterHref(priorChapter.id)}">Previous chapter</a>` : ""}
+        ${nextChapter ? `<a class="btn" href="${chapterHref(nextChapter.id)}">Continue to Chapter ${chapterIndex + 2}</a>` :
+          '<a class="btn" href="#/explore">Explore the papers</a><a class="btn btn-ghost" href="#/methods">Data &amp; Methods</a>'}
+      </div>
     </section>`;
 
   const story = root.querySelector(".scroll-story");
@@ -89,13 +110,22 @@ export function render(root, D) {
   const next = stage.querySelector("#nav-next");
   const sections = Array.from(story.querySelectorAll(".scroll-step"));
   const passages = sections.map((section) => section.querySelector(".scroll-step-inner"));
-  const map = createMap(mapContainer, D, { interactive: false, labels: false, pointRadius: 1.6 });
+  const map = needsMap ? createMap(mapContainer, D, { interactive: false, labels: false, pointRadius: 1.6 }) : null;
 
   function showMap(step) {
     const period = periods[step.filter?.period];
     mapContainer.hidden = false;
     overlay.hidden = true;
     overlay.replaceChildren();
+    if (evidence) {
+      const filter = step.filter || {};
+      const selection = evidence.select(filter);
+      map.setStory({ paperIds: new Set(selection.map((p) => p.id)) });
+      stageTitle.textContent = filter.journal ? D.journalName[filter.journal] :
+        filter.signal ? SIGNALS[filter.signal][0] : "Five journals on one map";
+      stageContext.textContent = `${fmt(selection.length)} highlighted papers · ${evidence.start}–${evidence.end}`;
+      return;
+    }
     map.setStory(period ? { cohortMin: period.start, cohortMax: period.end } : null);
     stageTitle.textContent = period ? `Papers from ${span(period)}` : "The research map";
     stageContext.textContent = period ? `${fmt(period.total)} highlighted papers` :
@@ -151,6 +181,7 @@ export function render(root, D) {
   let current = -1;
   function activate(index) {
     if (index === current) return;
+    const entering = current === -1;
     current = index;
     const step = steps[index];
     sections.forEach((section, i) => {
@@ -164,9 +195,20 @@ export function render(root, D) {
       mapContainer.hidden = true;
       overlay.hidden = false;
       if (step.figure === "bar") showComparison(step);
-      else showSensitivity(step);
+      else if (step.figure === "table") showSensitivity(step);
+      else {
+        const figure = chapterFigure(D, evidence, step, scaleSignals);
+        stageTitle.textContent = figure.title;
+        stageContext.textContent = figure.context;
+        overlay.innerHTML = figure.html;
+      }
     }
     status.textContent = `${index + 1} / ${steps.length}`;
+    if (!entering && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const changed = step.figure === "map" ? mapContainer : overlay;
+      changed.getAnimations().forEach((animation) => animation.cancel());
+      changed.animate([{ opacity: 0.58 }, { opacity: 1 }], { duration: 200, easing: "ease-out" });
+    }
     previous.setAttribute("aria-disabled", String(index === 0));
     next.setAttribute("aria-disabled", String(index === steps.length - 1));
   }
@@ -220,6 +262,6 @@ export function render(root, D) {
     removeEventListener("scroll", scheduleUpdate);
     removeEventListener("resize", scheduleUpdate);
     cancelAnimationFrame(frame);
-    map.destroy();
+    map?.destroy();
   };
 }

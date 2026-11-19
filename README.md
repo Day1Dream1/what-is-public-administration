@@ -87,12 +87,13 @@ python -m pa_map cluster
 
 审读全量模型的主题后更新 `pipeline/labels/topics.csv`。重跑聚类会生成 `topics.draft.csv`，应按新编号核对并采用新的命名表。确定新数据版本时更新 `config.toml` 里的 `data_version`，然后运行 `python -m pa_map export --release`。导出核验全时段、标签状态、语料版本、文件字段和逐刊逐年的图表分母。
 
-### 4. 写 Findings 并预览
+### 4. 更新五章并预览
 
-编辑 `site/public/content/findings.json`：
+第一章使用 `site/public/content/findings.json`。第二至第五章使用 `site/public/content/chapters.json`。导航和章节索引在 `site/src/chapters.js`，参考站的滚动机制记录在[走查审计](docs/reference-audit/README.md)。
 
 - `steps` 按阅读顺序排列。每步用 `heading` 和 `text` 解释一个问题，用 `figure` 选择地图、对比图或敏感性表。
 - 地图步骤用 `filter.period` 选择 `periods` 中的时间窗。对比步骤在 `compare.macros` 中按揭示顺序列出主题 ID，两个五年组的篇数和分母由网站随数据计算。
+- 其他章节使用共同刊期内的期刊或题名短语筛选。题名指示项的正则、分母和图表聚合在 `site/src/chapter-evidence.js`，同一篇文章可匹配多个短语。
 - 更新数据时复核叙事中的数字、主题名和敏感性表。定稿后将 `status` 设为 `final`，并让 `data_version` 与导出版本一致。
 
 ```bash

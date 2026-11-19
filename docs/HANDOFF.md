@@ -24,7 +24,7 @@ Claude Code 的仓库入口是 `CLAUDE.md`，Codex 从 `AGENTS.md` 进入，两�
 | --- | --- |
 | 首页标题、导读和地图预览 | `site/src/pages/home.js`、`site/src/style.css` |
 | 地图、搜索、筛选和单篇论文 | `site/src/map.js`、`site/src/pages/explore.js`、`site/src/router.js` |
-| 趋势、叙事和方法说明 | `site/src/pages/trends.js`、`site/public/content/findings.json`、`site/src/pages/methods.js` |
+| 趋势、五章叙事和方法说明 | `site/src/pages/trends.js`、`site/public/content/findings.json`、`site/public/content/chapters.json`、`site/src/pages/methods.js` |
 | 语料范围、纳入规则、主题名称 | `pipeline/config.toml`、`pipeline/audit/publisher-sample.csv`、`pipeline/labels/topics.csv` |
 | 正式构建和上线 | `site/scripts/check-release.mjs`、`.github/workflows/deploy.yml` |
 

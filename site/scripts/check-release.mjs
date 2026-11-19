@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import { CHAPTERS } from "../src/chapters.js";
+import { SIGNALS } from "../src/chapter-evidence.js";
 
 const root = process.argv[2] || "public";
 const load = (path) => JSON.parse(readFileSync(join(root, path), "utf8"));
@@ -70,6 +72,28 @@ const findings = load("content/findings.json");
 assert.equal(findings.status, "final", "Findings need reviewed release copy");
 assert.equal(findings.data_version, manifest.data_version, "Findings must match this data release");
 assert(!/\b(demo|synthetic)\b/i.test(JSON.stringify(findings)), "Findings still contain demo copy");
+assert(findings.periods?.early && findings.periods?.recent, "The field-map chapter needs two comparison periods");
+const chapterContent = load("content/chapters.json");
+assert.equal(chapterContent.status, "final", "The chapter collection needs reviewed release copy");
+assert.equal(chapterContent.data_version, manifest.data_version, "Chapters must match this data release");
+assert.deepEqual(chapterContent.chapters.map((c) => c.id), CHAPTERS.slice(1).map((c) => c.id));
+const chapterSignals = new Set(Object.keys(SIGNALS));
+const journalIds = new Set(manifest.journals.map((j) => j.code));
+const themeIds = new Set(macro.map((theme) => theme.id));
+for (const chapter of [findings, ...chapterContent.chapters]) {
+  const figures = chapter === findings ? ["map", "bar", "table"] : ["map", "signals", "journal", "overlap"];
+  assert(chapter.title.trim() && chapter.steps.length, "Each chapter needs a title and reading steps");
+  assert.equal(new Set(chapter.steps.map((s) => s.id)).size, chapter.steps.length, "Step IDs must be unique within a chapter");
+  for (const step of chapter.steps) {
+    assert(step.heading.trim() && step.text.trim(), `Missing text for ${step.id}`);
+    assert(!step.paperId || ids.has(step.paperId), `Unknown paper in ${step.id}`);
+    assert(!step.filter?.journal || journalIds.has(step.filter.journal), `Unknown journal in ${step.id}`);
+    assert(!step.filter?.signal || chapterSignals.has(step.filter.signal), `Unknown title phrase in ${step.id}`);
+    assert(figures.includes(step.figure), `Unsupported figure in ${step.id}`);
+    assert((step.signals || []).every((signal) => chapterSignals.has(signal)), `Unknown signal in ${step.id}`);
+    assert((step.themes || step.compare?.macros || []).every((theme) => themeIds.has(theme)), `Unknown theme in ${step.id}`);
+  }
+}
 const privateKeys = /^(abstract|abstract_inverted_index|embeddings?|vectors?|full_?text|mailto|api_key)$/i;
 for (const path of files.filter((file) => file.endsWith(".json"))) {
   JSON.stringify(load(`data/${path}`), (key, value) => {
@@ -77,4 +101,4 @@ for (const path of files.filter((file) => file.endsWith(".json"))) {
     return value;
   });
 }
-console.log(`Verified ${ids.size} paper records, ${expected.size} reconciled journal-years and final Findings.`);
+console.log(`Verified ${ids.size} paper records, ${expected.size} journal-years and five release chapters.`);

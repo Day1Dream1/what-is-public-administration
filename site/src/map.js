@@ -27,6 +27,7 @@ export function createMap(container, D, opts = {}) {
   const visible = (i) => story?.yearMax == null || P[i].year <= story.yearMax;
   const active = (i) => (!mask || mask[i]) &&
     (!story?.macros || story.macros.has(P[i].macro)) &&
+    (!story?.paperIds || story.paperIds.has(P[i].id)) &&
     (story?.cohortMin == null || P[i].year >= story.cohortMin) &&
     (story?.cohortMax == null || P[i].year <= story.cohortMax);
 
