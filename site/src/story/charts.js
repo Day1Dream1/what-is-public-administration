@@ -126,7 +126,9 @@ export function twoLine(el, ctx, data) {
       el.innerHTML = "";
       const [W, H] = size(el), mg = { t: 24, r: 24, b: 28, l: 48 };
       const x = d3.scaleLinear([years[0], years.at(-1)], [mg.l, W - mg.r]);
-      const y = d3.scaleLinear([20, 80], [H - mg.b, mg.t]);
+      const all = [...data.theory, ...data.phenomenon].filter((v) => v != null);
+      const lo = Math.min(20, Math.floor((d3.min(all) - 5) / 10) * 10), hi = Math.max(80, Math.ceil((d3.max(all) + 5) / 10) * 10);
+      const y = d3.scaleLinear([lo, hi], [H - mg.b, mg.t]);
       const svg = d3.select(el).append("svg").attr("width", W).attr("height", H);
       svg.append("g").attr("transform", `translate(${mg.l},0)`).call(d3.axisLeft(y).ticks(6).tickFormat((d) => d + "%").tickSize(-(W - mg.l - mg.r))).call(axisStyle);
       svg.append("g").attr("transform", `translate(0,${H - mg.b})`).call(d3.axisBottom(x).ticks(Math.min(23, W / 45)).tickFormat(d3.format("d")).tickSize(0)).call(axisStyle).selectAll("text").attr("dy", "1.2em");
@@ -137,7 +139,7 @@ export function twoLine(el, ctx, data) {
         const gid = `grad-${key}`;
         defs.append("linearGradient").attr("id", gid).attr("x1", 0).attr("x2", 0).attr("y1", 0).attr("y2", 1)
           .html(`<stop offset="0" stop-color="${COLORS[key]}" stop-opacity=".35"/><stop offset="1" stop-color="${COLORS[key]}" stop-opacity=".04"/>`);
-        const ar = d3.area().defined((d) => d != null).x((d, k) => x(years[k])).y0(y(20)).y1((d) => y(Math.max(20, d))).curve(d3.curveMonotoneX);
+        const ar = d3.area().defined((d) => d != null).x((d, k) => x(years[k])).y0(y(lo)).y1((d) => y(d)).curve(d3.curveMonotoneX);
         const grp = svg.append("g").style("transition", `opacity ${T}ms`);
         grp.append("path").attr("d", ar(data[key])).attr("fill", `url(#${gid})`);
         grp.append("path").attr("d", ar.lineY1()(data[key])).attr("fill", "none").attr("stroke", COLORS[key]).attr("stroke-width", 2);
@@ -471,12 +473,16 @@ export function boxPlots(el, ctx, data) {
       [["importance", "Question Importance"], ["scope", "Question Scope"]].forEach(([key, title], k) => {
         const d = data[key], x0 = (W / 2) * k, pw = W / 2;
         const g = svg.append("g").attr("transform", `translate(${x0},0)`).style("transition", `opacity ${T}ms`);
-        const lo = Math.min(d.causal_q[0], d.noncausal_q[0]) - 1, hi = Math.max(d.causal_q[4], d.noncausal_q[4]) + 1;
+        // Ratings are integers, so raw quartiles collapse. As on the reference site, the box is mean ± 0.674 SD
+        // (the interquartile range of a normal distribution) and the whiskers mean ± 1.645 SD (5th–95th percentile).
+        const box = (g) => { const m = d[`${g}_mean`], sd = d[`${g}_sd`]; return [m - 1.645 * sd, m - 0.674 * sd, m, m + 0.674 * sd, m + 1.645 * sd]; };
+        d.causal_b = box("causal"); d.noncausal_b = box("noncausal");
+        const lo = Math.min(d.causal_b[0], d.noncausal_b[0]) - 0.5, hi = Math.max(d.causal_b[4], d.noncausal_b[4]) + 0.5;
         const y = d3.scaleLinear([Math.max(1, Math.floor(lo)), Math.min(10, Math.ceil(hi))], [H - 70, 50]);
         g.append("text").attr("x", pw / 2).attr("y", 26).attr("text-anchor", "middle").attr("font-size", 13).attr("font-weight", 600).text(title);
         g.append("g").attr("transform", `translate(60,0)`).call(d3.axisLeft(y).ticks(6).tickSize(-(pw - 100))).call(axisStyle);
         [["noncausal", "Other Papers", "#cbd5e1", "#e2e8f0"], ["causal", "Causal Methods", "#60a5fa", "#dbeafe"]].forEach(([grp, lab, stroke, fillc], j) => {
-          const q = d[`${grp}_q`], cx = 60 + (pw - 100) * (j === 0 ? 0.33 : 0.67), bw = Math.min(70, pw * 0.15);
+          const q = d[`${grp}_b`], cx = 60 + (pw - 100) * (j === 0 ? 0.33 : 0.67), bw = Math.min(70, pw * 0.15);
           g.append("line").attr("x1", cx).attr("x2", cx).attr("y1", y(q[0])).attr("y2", y(q[4])).attr("stroke", stroke);
           g.append("rect").attr("x", cx - bw / 2).attr("width", bw).attr("y", y(q[3])).attr("height", y(q[1]) - y(q[3])).attr("fill", fillc).attr("stroke", stroke);
           g.append("line").attr("x1", cx - bw / 2).attr("x2", cx + bw / 2).attr("y1", y(q[2])).attr("y2", y(q[2])).attr("stroke", stroke).attr("stroke-width", 2);

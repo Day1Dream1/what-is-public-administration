@@ -160,10 +160,14 @@ def shifts(P, topics, llm):
             o = llm.get(p["id"], {}).get("orientation")
             if o:
                 by[p["sub"]][o] += 1
+        # relative to the field: a sub-area is theory-oriented if its theory-driven share is at least
+        # 10 points above the corpus-wide share, phenomenon-oriented if 10 points below, mixed otherwise
+        allc = sum(by.values(), Counter())
+        base = allc["theory"] / max(1, allc["theory"] + allc["phenomenon"])
         for s, c in by.items():
             tot = c["theory"] + c["phenomenon"]
             ratio = c["theory"] / tot if tot else None
-            orient[s] = (ratio, None if ratio is None else ("theory" if ratio >= 0.5 else "phenomenon" if ratio <= 0.35 else "mixed"))
+            orient[s] = (ratio, None if ratio is None else ("theory" if ratio >= base + 0.10 else "phenomenon" if ratio <= base - 0.10 else "mixed"))
     out = []
     for s in topics["sub"]:
         e, l = 100 * ce[s["id"]] / ne, 100 * cl[s["id"]] / nl
@@ -172,6 +176,7 @@ def shifts(P, topics, llm):
                     "change": r4(l - e), "orientation": o, "theory_ratio": r4(ratio)})
     out.sort(key=lambda d: d["change"])
     return {"early": list(early), "late": list(late), "n_early": ne, "n_late": nl,
+            "orientation_rule": "theory if the sub-area's theory-driven share is ≥ 10 points above the corpus share; phenomenon if ≥ 10 points below; otherwise mixed",
             "orientation_status": "ready" if orient else "awaiting_llm", "topics": out,
             "threshold_pp": 0.5}
 

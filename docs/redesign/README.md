@@ -18,11 +18,11 @@
 | 章 | 路径 | 吸顶图段 × 步数 | 证据 | 状态 |
 | --- | --- | --- | --- | --- |
 | 1 What is public administration — and how has the field evolved? | `#/chapters/what-is-public-administration` | 语义地图 6 + 主题小多图 7 = 13 | 已发布的主题与坐标 | 可用 |
-| 2 What happened to the big theories? | `#/chapters/big-theories` | 理论 vs 现象 4 + 理论轨迹 7 + 子领域增减 4 = 15 | LLM 分类（待运行）、摘要理论提及、子主题份额变化 | 理论 vs 现象一段待 LLM |
+| 2 What happened to the big theories? | `#/chapters/big-theories` | 理论 vs 现象 4 + 理论轨迹 7 + 子领域增减 4 = 15 | LLM 分类（8,874 篇已完成）、摘要理论提及、子主题份额变化 | — |
 | 3 Is the public administration field fracturing? | `#/chapters/fracturing` | 四项分裂指标 6 + 引文弦图 5 = 11 | 子主题 HHI、SPECTER2 语义凝聚度与离散度、Crossref 引文 | 可用 |
 | 4 What methods do scholars use? | `#/chapters/methods` | 因果方法面积图 5 + 主题×时期热图 6 + 数据来源 4 = 15 | 关键词规则（`pipeline/coding_rules.toml`） | 可用 |
-| 5 Are our methods shaping the questions we ask? | `#/chapters/methods-shaping-questions` | 语义空间散点 5 + 问题评分箱线图 4 = 9 | 中心距离 Welch 检验；LLM 评分（待运行） | 评分一段待 LLM |
-| 6 What we learned | `#/chapters/conclusion` | 四条趋势 6 + 五个解释视角 5 = 11 | 前五章的汇总 | 理论/现象两条线待 LLM |
+| 5 Are our methods shaping the questions we ask? | `#/chapters/methods-shaping-questions` | 语义空间散点 5 + 问题评分箱线图 4 = 9 | 中心距离 Welch 检验；LLM 评分（已完成） | — |
+| 6 What we learned | `#/chapters/conclusion` | 四条趋势 6 + 五个解释视角 5 = 11 | 前五章的汇总 | — |
 
 合计 14 个吸顶图段、74 步，与参考站完全一致。旧路径（`#/findings`、`#/chapters/field-map` 等）自动跳转到对应新章；`#/chapters/journals` 跳到 Explore › Journal Comparison。
 
@@ -128,20 +128,27 @@ Explore 七项：Semantic Map（`#/explore`）、Theme Browser（`#/explore/them
 | syn-together | 恢复 | 同左 | — |
 | phil-kuhn / phil-lamppost / phil-new-paradigm / phil-trading / phil-stokes | 图不变，只换文字卡 | 同左，五个视角改写为公共行政语境 | — |
 
-## 四、待你完成的一步：LLM 标签
+## 四、LLM 标签（2026-11-19 已完成）
 
-第 2、5、6 章有三处需要逐篇 LLM 标签（理论 / 现象导向、问题重要性、适用范围）。脚本已写好，在本机运行：
+gpt-4o-mini 对 8,874 篇有摘要的论文逐篇标注了理论 / 现象导向、问题重要性和适用范围（1–10），0 条失败，费用约 0.62 美元。标签文件 `pipeline/data/interim/llm_labels.jsonl` 只留在本机，不进 Git；公开数据只含汇总数。
+
+数据推翻了沿用参考站的几处假设，正文已改为按数据生成：
+
+- 理论导向不是一路下降：1980 年代约 18%，2015 年前后升到约 41% 的峰值，近年回落到约 31%。现象导向始终是多数。
+- 第 2 章子领域的“理论 / 现象 / 混合”按全领域基准 ±10 个百分点判定（固定 50% 阈值会把几乎全部子领域判为现象导向）。增长和萎缩的子领域在导向上没有明显差别。
+- 因果论文的重要性（7.69 对 7.57，d = 0.22）和适用范围（6.68 对 6.56，d = 0.23）略高。评分基本是整数，箱线图改用均值 ± 0.674 SD 和 ± 1.645 SD，与参考站一致。
+
+重跑方法（密钥只放环境变量）：
 
 ```bash
 cd pipeline && source .venv/bin/activate
-export OPENAI_API_KEY=sk-...            # 不要写进任何文件
-python -m pa_map classify --limit 50    # 试跑，检查 data/interim/llm_labels.jsonl
-python -m pa_map classify               # 约 8,900 篇，gpt-4o-mini 约 1–2 美元
+export OPENAI_API_KEY="$(cat ~/path/to/openai_key.txt)"   # 不要写进仓库
+python -m pa_map classify               # 已有标签会跳过
 python -m pa_map evidence               # 重算全部章节数据
 cd ../site && npm run build && node scripts/check-release.mjs dist
 ```
 
-生成后，“Awaiting data”提示会自动消失，曲线、颜色和正文数字自动填入。随后建议人工抽查约 100 篇的分类结果，并把一致率写进 About。
+建议人工抽查约 100 篇的分类结果，把一致率写进 About。
 
 ## 五、复现截图对照
 

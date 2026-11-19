@@ -19,7 +19,7 @@ export default async function (D) {
 
   return {
     title: "What we learned",
-    dek: `Four trends: fading grand frameworks, ${ready ? "rising phenomenon-driven research" : "a turn toward concrete public problems"}, more causal methods, persistent coherence. What they tell us about where public administration is headed.`,
+    dek: `Four trends: fading grand frameworks, ${ready ? "a phenomenon-driven core that never went away" : "a turn toward concrete public problems"}, more causal methods, persistent coherence. What they tell us about where public administration is headed.`,
     stats: [[String(Y.length), "years of data"], ["4", "converging trends"]],
     sections: [
       {
@@ -27,10 +27,10 @@ export default async function (D) {
         steps: [
           { id: "syn-intro", state: {}, html: `The previous chapters each traced a single thread: how public administration research frames its questions, what methods it uses, and whether the field holds together as it grows. Each thread revealed a distinct shift. Viewed together, <strong>four trends converged over ${Y.length} years</strong> to reshape the field in ways no single trend captures.` },
           { id: "syn-theory", state: { emph: "theory" }, html: ready
-            ? `The role of grand theory followed a rise-and-fall path. <strong>Theory-driven papers</strong> peaked around ${O.peak.year} at roughly ${Math.round(O.peak.theory)}% of papers and have fallen since. The field did not abandon theory so much as change the work theory is asked to do.`
+            ? `The role of theory followed a rise-and-fall path. <strong>Theory-driven papers</strong> grew from about ${Math.round(mean(O.theory, 1980, 1989))}% of the field in the 1980s to a peak of roughly ${Math.round(O.peak.theory)}% around ${O.peak.year}, then eased to ${Math.round(mean(O.theory, 2020, Y1))}% in 2020–${Y1}. Explicit mentions of the grand frameworks peaked earlier, around ${T.featured_peak.year}. The field did not abandon theory so much as stop organising itself around a few big ones.`
             : `The role of grand theory followed a rise-and-fall path. Explicit mentions of New Public Management, principal–agent theory and institutional theory peaked at <strong>${f1(T.featured_peak.rate)}% of abstracts around ${T.featured_peak.year}</strong> and fell to ${f1(T.featured_latest)}% by ${Y1}. <span class="pending-note">The amber theory-driven line appears once the LLM labels are generated.</span>` },
           { id: "syn-phenomenon", state: { emph: "phenomenon" }, html: ready
-            ? `As the theory-driven share receded, <strong>phenomenon-driven research</strong> rose to about ${Math.round(O.recent_phenomenon)}% of recent papers. These studies begin from reforms, services and public problems rather than from the predictions of a framework.`
+            ? `<strong>Phenomenon-driven research</strong> has always been the majority in public administration, and after ${O.peak.year} its share rose again, to about ${Math.round(O.recent_phenomenon)}% of recent papers. These studies begin from reforms, services and public problems rather than from the predictions of a framework.`
             : `As those frameworks receded, the growing sub-areas were organised around concrete public problems: co-production, trust and corruption, frontline discretion, representation. <span class="pending-note">The blue phenomenon-driven line appears once the LLM labels are generated.</span>` },
           { id: "syn-methods", state: { emph: "causal" }, html: `The methodological transformation is visible in the orange line. <strong>Causal identification methods</strong> rose from almost nothing before 2000 to ${f1(mean(M.any_causal, 2021, Y1))}% of abstracts in 2021–${Y1}, led by survey and field experiments. Adoption remains uneven across research areas.` },
           { id: "syn-coherence", state: { emph: "coherence" }, html: `One might expect these shifts to fragment the field, but the evidence suggests otherwise. ${cross != null ? `Roughly <strong>${cross}% of citations cross area boundaries</strong>, and ` : ""}<strong>semantic coherence</strong> has held steady since the 1980s, even as the number of effective paradigms grew from ${f1(eff[0])} to ${f1(d3.max(eff))} at its peak. That growth reflects the expanding scope of the field, not its dissolution.` },

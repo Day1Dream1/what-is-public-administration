@@ -21,11 +21,19 @@ export default async function (D) {
 
   let punch;
   if (S.orientation_status === "ready") {
-    const share = (arr, o) => arr.filter((t) => t.orientation === o).length;
-    punch = `Of the ${pos.length} growing sub-areas, ${share(pos, "phenomenon")} are phenomenon-driven and ${share(pos, "theory")} theory-driven; of the ${neg.length} declining ones, ${share(neg, "theory")} are theory-driven. The pattern is suggestive, not conclusive.`;
+    const cnt = (arr, o) => arr.filter((t) => t.orientation === o).length;
+    const gp = cnt(pos, "phenomenon") / pos.length, dp = cnt(neg, "phenomenon") / neg.length;
+    const tally = (arr) => `${cnt(arr, "theory")} theory-oriented, ${cnt(arr, "phenomenon")} phenomenon-oriented and ${cnt(arr, "mixed")} mixed`;
+    punch = gp - dp > 0.2
+      ? `The pattern is suggestive: the sub-areas that grew are more often phenomenon-oriented (${tally(pos)}) than those that shrank (${tally(neg)}).`
+      : `Unlike in strategy research, orientation does not separate the winners from the losers. The ${pos.length} growing sub-areas are ${tally(pos)}; the ${neg.length} declining ones are ${tally(neg)}. What grew is a set of problems, such as co-production, trust and frontline discretion, studied with and without big theories.`;
   } else {
     punch = `The pattern is suggestive: attention has moved from the structure of the state toward citizens, frontline work and behaviour. Once the LLM labels are in, the bar colours show whether the growing areas are also more phenomenon-driven.`;
   }
+  // orientation summaries for the text
+  const decade = (arr, a, b) => { const v = arr.filter((x, i) => O.years?.[i] >= a && O.years?.[i] <= b && x != null); return v.reduce((s2, x) => s2 + x, 0) / v.length; };
+  const th80 = ready ? Math.round(decade(O.theory, 1980, 1989)) : null;
+  const minPhen = ready ? Math.round(Math.min(...O.phenomenon.filter((x) => x != null))) : null;
 
   return {
     title: "The fading of the grand frameworks",
@@ -40,10 +48,10 @@ export default async function (D) {
         steps: [
           { id: "tvp-method", state: {}, html: `I used an LLM${ready ? ` (${O.model})` : ""} to read each of the ${fmt(ready ? O.n : nAbs)} abstracts and classify every paper as primarily <strong>theory-driven</strong> or <strong>phenomenon-driven</strong>. The chart shows the share of each type over time, smoothed with a 3-year rolling average.${ready ? "" : " " + pend}` },
           { id: "tvp-peak", state: ready ? { emph: "theory", marker: O.peak.year } : { emph: "theory" }, html: ready
-            ? `Using a 3-year rolling average, theory-driven work peaked around <strong>${O.peak.year}</strong> at roughly ${Math.round(O.peak.theory)}% of papers.`
+            ? `Using a 3-year rolling average, theory-driven work rose from about ${th80}% of papers in the 1980s to a peak of roughly <strong>${Math.round(O.peak.theory)}% around ${O.peak.year}</strong>.`
             : `Once the labels are in, this step marks the year theory-driven work peaked.` },
           { id: "tvp-shift", state: { emph: "phenomenon" }, html: ready
-            ? `Since then, <strong>phenomenon-driven research</strong> has risen to about ${Math.round(O.recent_phenomenon)}% of published papers in 2020–${Y1}.`
+            ? `Since then, <strong>phenomenon-driven research</strong> has climbed back to about ${Math.round(O.recent_phenomenon)}% of papers in 2020–${Y1}. In public administration it has always been the majority: its share never fell below ${minPhen}%.`
             : `…and this step the recent share of <strong>phenomenon-driven research</strong>.` },
           { id: "tvp-meaning", state: {}, html: `In public administration, a phenomenon-driven paper typically starts from a reform, a policy or a service, such as a performance-pay scheme, a digital benefits portal or a pandemic response, rather than from a general theory it sets out to test.` },
         ],

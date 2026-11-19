@@ -71,7 +71,7 @@ def _num(v):
         return None
 
 
-def run(cfg=None, model="gpt-4o-mini", limit=None, workers=6):
+def run(cfg=None, model="gpt-4o-mini", limit=None, workers=12):
     key = os.environ.get("OPENAI_API_KEY")
     if not key:
         sys.exit("Set OPENAI_API_KEY in your shell first (it is never written to disk by this script).")

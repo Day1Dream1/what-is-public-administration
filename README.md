@@ -92,7 +92,7 @@ python -m pa_map cluster
 ```bash
 python -m pa_map refs                   # Crossref 参考文献列表（引文网络），约 1 小时，可断点续跑
 python -m pa_map classify --limit 50    # 可选：LLM 理论/现象分类与问题评分（需 OPENAI_API_KEY），先试跑
-python -m pa_map classify               # 全量约 8,900 篇摘要，gpt-4o-mini 约 1–2 美元
+python -m pa_map classify               # 全量约 8,900 篇摘要，gpt-4o-mini 实测约 0.6 美元
 python -m pa_map evidence               # 写入 site/public/data/chapters/，只含汇总数
 python -m pa_map evidence --sample diff_in_diff   # 抽查某条关键词规则命中的摘要
 ```

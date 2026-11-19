@@ -28,15 +28,15 @@ Claude Code 的仓库入口是 `CLAUDE.md`，Codex 从 `AGENTS.md` 进入，两�
 | 章节 | 路径 | 步数 | 证据与图形 |
 | --- | --- | ---: | --- |
 | 1 学科如何演变 | `#/chapters/what-is-public-administration` | 13 | 累计年份语义地图（回拨、推进、增长光晕、播放滑块），十主题小多图 |
-| 2 大理论去了哪里 | `#/chapters/big-theories` | 15 | LLM 理论/现象分类（待运行）、摘要理论提及堆叠面积、子主题增减发散条形 |
+| 2 大理论去了哪里 | `#/chapters/big-theories` | 15 | LLM 理论/现象分类（已完成）、摘要理论提及堆叠面积、子主题增减发散条形 |
 | 3 学科是否分裂 | `#/chapters/fracturing` | 11 | 有效范式、语义凝聚度、HHI、离散度四卡，Crossref 引文弦图 |
 | 4 研究用什么方法 | `#/chapters/methods` | 15 | 九种因果方法堆叠面积、主题×时期热图、数据来源堆叠面积 |
-| 5 方法是否塑造问题 | `#/chapters/methods-shaping-questions` | 9 | 因果 / 非因果散点与中心距离检验，问题评分箱线图（待运行） |
+| 5 方法是否塑造问题 | `#/chapters/methods-shaping-questions` | 9 | 因果 / 非因果散点与中心距离检验，问题评分箱线图（LLM，已完成） |
 | 6 我们学到了什么 | `#/chapters/conclusion` | 11 | 四条趋势线，五个解释视角 |
 
 Explore 七项：`#/explore`、`#/explore/themes`、`#/explore/topics`、`#/explore/journals`、`#/explore/citations`、`#/explore/methods`、`#/about`。
 
-章节数据由 `python -m pa_map evidence` 生成到 `site/public/data/chapters/`，只含汇总数和按 `papers.json` 顺序对齐的方法编码。LLM 相关的三处（第 2 章理论/现象、第 5 章问题评分、第 6 章两条线）在运行 `python -m pa_map classify` 之前显示“Awaiting data”。
+章节数据由 `python -m pa_map evidence` 生成到 `site/public/data/chapters/`，只含汇总数和按 `papers.json` 顺序对齐的方法编码。LLM 相关的三处（第 2 章理论/现象、第 5 章问题评分、第 6 章两条线）读取本机的 `pipeline/data/interim/llm_labels.jsonl`（8,874 篇，2026-11-19 生成，不进 Git）。没有该文件时这三处显示“Awaiting data”。第 2、6 章的正文按数据走向生成，重跑标签后结论会随数据变化。
 
 ## 改哪里
 
