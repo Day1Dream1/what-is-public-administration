@@ -1,6 +1,6 @@
 # What Is Public Administration? 项目交接
 
-Claude Code、Codex 和项目维护者可以共同使用这份文档。工作目录是 `~/Documents/sirui_vault/phd/website/what-is-public-administration`，它是独立的 Git 仓库。公开的 v0.1 覆盖 1980–2025 年五本期刊的 10,606 篇论文，有 10 个宏观组、30 个子主题。五刊直接比较使用 2001–2025 年。 [已上线的 v0.1](https://what-is-public-administration.threegogoing.chatgpt.site/)
+Claude Code、Codex 和项目维护者可以共同使用这份文档。工作目录是 `~/Documents/sirui_vault/phd/website/what-is-public-administration`，它是独立的 Git 仓库。公开的 v0.1 覆盖 1980–2025 年五本期刊的 10,606 篇论文，有 10 个宏观组、30 个子主题。五刊直接比较使用 2001–2025 年。 [GitHub 仓库](https://github.com/Day1Dream1/what-is-public-administration) · [GitHub Pages 公开版](https://day1dream1.github.io/what-is-public-administration/)
 
 ## 用 Claude Code 打开
 
@@ -49,6 +49,8 @@ npm run preview
 - 语料复核中的一条勘误和一篇专题导言见[核验记录](literature-and-journal-audit.md)。处理纳入问题时，从记录证据、重新导出和复核趋势入手。
 
 ## 第一次部署到 GitHub Pages
+
+当前仓库已经启用 GitHub Actions 发布源，`main` 上的部署已验证。以下步骤适用于首次设置或未来迁移到新仓库。
 
 1. 登录 `Day1Dream1`，在该账号下[新建仓库](https://github.com/new)，命名为 `what-is-public-administration`，选择 **Public**。留空 README、`.gitignore` 和许可证选项，以便推送现有项目历史。
 2. 在本项目根目录执行 `git push -u origin main`。当前本机 `origin` 使用已验证的 `github-sirui` SSH 配置。其他电脑可从 GitHub 克隆，使用各自已授权的 Git 连接。

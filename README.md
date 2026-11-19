@@ -4,7 +4,7 @@
 
 `site/public/data/manifest.json` 记录当前数据版本和状态。GitHub Pages 仅部署通过校验的 `release` 版本。五刊 ISSN、抽查记录和解释用的参考文献见[核验报告](docs/literature-and-journal-audit.md)。
 
-[公开版 v0.1](https://what-is-public-administration.threegogoing.chatgpt.site/)收录 1980–2025 年五刊的 10,606 篇论文。正式静态构建也兼容 GitHub Pages 的仓库子路径。
+[GitHub Pages 公开版 v0.1](https://day1dream1.github.io/what-is-public-administration/)收录 1980–2025 年五刊的 10,606 篇论文。[Sites 公开版](https://what-is-public-administration.threegogoing.chatgpt.site/)使用同一份数据。
 
 [Claude Code 与 Codex 交接文档](docs/HANDOFF.md)包含入口命令、文件地图、本地验收和 GitHub Pages 首次部署步骤。
 
