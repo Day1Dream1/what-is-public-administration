@@ -6,6 +6,8 @@
 
 [公开版 v0.1](https://what-is-public-administration.threegogoing.chatgpt.site/)收录 1980–2025 年五刊的 10,606 篇论文。正式静态构建也兼容 GitHub Pages 的仓库子路径。
 
+[Claude Code 与 Codex 交接文档](docs/HANDOFF.md)包含入口命令、文件地图、本地验收和 GitHub Pages 首次部署步骤。
+
 ## 目录结构
 
 ```
