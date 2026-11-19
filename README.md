@@ -87,6 +87,18 @@ python -m pa_map cluster
 
 审读全量模型的主题后更新 `pipeline/labels/topics.csv`。重跑聚类会生成 `topics.draft.csv`，应按新编号核对并采用新的命名表。确定新数据版本时更新 `config.toml` 里的 `data_version`，然后运行 `python -m pa_map export --release`。导出核验全时段、标签状态、语料版本、文件字段和逐刊逐年的图表分母。
 
+### 章节证据（六章与 Explore 用）
+
+```bash
+python -m pa_map refs                   # Crossref 参考文献列表（引文网络），约 1 小时，可断点续跑
+python -m pa_map classify --limit 50    # 可选：LLM 理论/现象分类与问题评分（需 OPENAI_API_KEY），先试跑
+python -m pa_map classify               # 全量约 8,900 篇摘要，gpt-4o-mini 约 1–2 美元
+python -m pa_map evidence               # 写入 site/public/data/chapters/，只含汇总数
+python -m pa_map evidence --sample diff_in_diff   # 抽查某条关键词规则命中的摘要
+```
+
+方法、数据来源和理论提及的规则在 `pipeline/coding_rules.toml`，可直接修改后重跑 `evidence`。逐步对照与设计说明见 [docs/redesign/README.md](docs/redesign/README.md)。
+
 ### 4. 更新五章并预览
 
 第一章使用 `site/public/content/findings.json`。第二至第五章使用 `site/public/content/chapters.json`。导航和章节索引在 `site/src/chapters.js`，参考站的滚动机制记录在[走查审计](docs/reference-audit/README.md)。

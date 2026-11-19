@@ -2,13 +2,12 @@ import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { CHAPTERS } from "../src/chapters.js";
-import { SIGNALS } from "../src/chapter-evidence.js";
 
 const root = process.argv[2] || "public";
 const load = (path) => JSON.parse(readFileSync(join(root, path), "utf8"));
 const files = readdirSync(join(root, "data")).sort();
 const fieldNames = ["id", "doi", "title", "authors", "year", "j", "m", "s", "x", "y", "a", "c"];
-assert.deepEqual(files, ["coverage.json", "downloads", "manifest.json", "papers.json", "topics.json", "trends.json"]);
+assert.deepEqual(files, ["chapters", "coverage.json", "downloads", "manifest.json", "papers.json", "topics.json", "trends.json"]);
 assert.deepEqual(readdirSync(join(root, "data/downloads")).sort(), ["coverage.csv", "papers.csv"]);
 const manifest = load("data/manifest.json");
 assert.equal(manifest.status, "release", "Only a full real-data release can be deployed");
@@ -68,37 +67,27 @@ for (const [journal, year, theme, count] of trendRows) {
   assert.equal(aggregates.get(key), count, `Trend count for ${key}`);
   aggregates.delete(key);
 }
-const findings = load("content/findings.json");
-assert.equal(findings.status, "final", "Findings need reviewed release copy");
-assert.equal(findings.data_version, manifest.data_version, "Findings must match this data release");
-assert(!/\b(demo|synthetic)\b/i.test(JSON.stringify(findings)), "Findings still contain demo copy");
-assert(findings.periods?.early && findings.periods?.recent, "The field-map chapter needs two comparison periods");
-const chapterContent = load("content/chapters.json");
-assert.equal(chapterContent.status, "final", "The chapter collection needs reviewed release copy");
-assert.equal(chapterContent.data_version, manifest.data_version, "Chapters must match this data release");
-assert.deepEqual(chapterContent.chapters.map((c) => c.id), CHAPTERS.slice(1).map((c) => c.id));
-const chapterSignals = new Set(Object.keys(SIGNALS));
-const journalIds = new Set(manifest.journals.map((j) => j.code));
-const themeIds = new Set(macro.map((theme) => theme.id));
-for (const chapter of [findings, ...chapterContent.chapters]) {
-  const figures = chapter === findings ? ["map", "bar", "table"] : ["map", "signals", "journal", "overlap"];
-  assert(chapter.title.trim() && chapter.steps.length, "Each chapter needs a title and reading steps");
-  assert.equal(new Set(chapter.steps.map((s) => s.id)).size, chapter.steps.length, "Step IDs must be unique within a chapter");
-  for (const step of chapter.steps) {
-    assert(step.heading.trim() && step.text.trim(), `Missing text for ${step.id}`);
-    assert(!step.paperId || ids.has(step.paperId), `Unknown paper in ${step.id}`);
-    assert(!step.filter?.journal || journalIds.has(step.filter.journal), `Unknown journal in ${step.id}`);
-    assert(!step.filter?.signal || chapterSignals.has(step.filter.signal), `Unknown title phrase in ${step.id}`);
-    assert(figures.includes(step.figure), `Unsupported figure in ${step.id}`);
-    assert((step.signals || []).every((signal) => chapterSignals.has(signal)), `Unknown signal in ${step.id}`);
-    assert((step.themes || step.compare?.macros || []).every((theme) => themeIds.has(theme)), `Unknown theme in ${step.id}`);
-  }
-}
+// Chapter evidence (python -m pa_map evidence): one file per chart, aggregates only.
+const CHAPTER_FILES = ["ch2_orientation", "ch2_shifts", "ch2_theories", "ch3_citations", "ch3_fragmentation", "ch4_heatmap",
+  "ch4_methods", "ch4_sources", "ch5_importance", "ch5_periphery", "ch6_synthesis", "paper_codes"];
+assert.deepEqual(readdirSync(join(root, "data/chapters")).sort(), CHAPTER_FILES.map((f) => `${f}.json`));
+assert.equal(CHAPTERS.length, 6, "Six chapters, as on the reference site");
+const ev = (f) => load(`data/chapters/${f}.json`);
+const codes = ev("paper_codes");
+for (const k of ["m", "s", "c"]) assert.equal(codes[k].length, rows.length, `paper_codes.${k} must align with papers.json`);
+assert.equal(codes.c.reduce((a, b) => a + b, 0), rows.filter((r) => r[10]).length, "Only papers with abstracts are coded");
+for (const f of ["ch2_orientation", "ch5_importance"]) assert(["ready", "awaiting_llm"].includes(ev(f).status), `${f} status`);
+assert.equal(ev("ch3_citations").status, "ready", "Citation flows need reference data (python -m pa_map refs)");
+assert.equal(ev("ch2_shifts").topics.length, sub.length, "Sub-area shifts must cover every subtopic");
+assert.equal(ev("ch4_heatmap").themes.length, macro.length, "Heatmap must cover every theme");
+const years = ev("ch4_methods").years;
+assert(years[0] === start && years.at(-1) === end, "Method series must span the release window");
 const privateKeys = /^(abstract|abstract_inverted_index|embeddings?|vectors?|full_?text|mailto|api_key)$/i;
-for (const path of files.filter((file) => file.endsWith(".json"))) {
+const publicJson = [...files.filter((file) => file.endsWith(".json")), ...CHAPTER_FILES.map((f) => `chapters/${f}.json`)];
+for (const path of publicJson) {
   JSON.stringify(load(`data/${path}`), (key, value) => {
     assert(!privateKeys.test(key), `Private field ${key} in ${path}`);
     return value;
   });
 }
-console.log(`Verified ${ids.size} paper records, ${expected.size} journal-years and five release chapters.`);
+console.log(`Verified ${ids.size} paper records, ${expected.size} journal-years, six chapters and ${CHAPTER_FILES.length} evidence files.`);

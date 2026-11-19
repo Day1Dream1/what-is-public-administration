@@ -40,7 +40,7 @@ export function render(root, D) {
     <h2 class="section-title">Chapters</h2>
     ${chapterList()}
   </div></section>
-  <footer class="site">Created by ${SITE.authorUrl ? `<a href="${esc(SITE.authorUrl)}">${esc(SITE.author)}</a>` : esc(SITE.author)}${SITE.affiliation ? `, ${esc(SITE.affiliation)}` : ""} · Data ${esc(m.data_version)} · <a href="#/methods">Data &amp; Methods</a></footer>`;
+  <footer class="site">Created by ${SITE.authorUrl ? `<a href="${esc(SITE.authorUrl)}">${esc(SITE.author)}</a>` : esc(SITE.author)}${SITE.affiliation ? `, ${esc(SITE.affiliation)}` : ""} · Data ${esc(m.data_version)} · <a href="#/about">About</a></footer>`;
 
   const grid = root.querySelector("#intro-grid");
   const mq = matchMedia("(max-width: 900px)");

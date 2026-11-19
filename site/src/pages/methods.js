@@ -1,6 +1,7 @@
 import * as d3 from "d3";
 import { SITE } from "../config.js";
 import { esc, fmt, pct } from "../data.js";
+import { evMany } from "../story/evidence.js";
 
 const sections = {
   corpus: "Corpus",
@@ -8,6 +9,7 @@ const sections = {
   rules: "Inclusion rules",
   model: "Topic model",
   sensitivity: "Sensitivity",
+  evidence: "Chapter evidence",
   version: "Data version",
   limits: "Limitations",
   references: "References",
@@ -27,8 +29,9 @@ export function update(params) {
   }
 }
 
-export function render(root, D, params) {
+export async function render(root, D, params) {
   const m = D.manifest, P = m.params;
+  const E = await evMany(["ch2_orientation", "ch3_citations", "ch4_methods", "ch5_importance"]);
   const years = d3.range(m.window[0], m.window[1] + 1);
   const covBy = new Map(D.coverage.map((c) => [`${c.journal}|${c.year}`, c]));
   // reconciliation: published papers per journal-year must equal coverage.mapped
@@ -57,11 +60,11 @@ export function render(root, D, params) {
 
   root.innerHTML = `
   <section class="hero"><div class="container hero-inner" style="padding:56px 0 40px">
-    <p class="kicker">Data &amp; Methods</p>
+    <p class="kicker">About this project</p>
     <h1 class="title">How this map was made</h1>
     <p class="dek">Which papers are included, how themes were built, what each chart's denominator is, and where the data are thin.</p>
     <nav class="toc" aria-label="On this page">
-      ${Object.entries(sections).map(([id, title]) => `<a href="#/methods?section=${id}">${title}</a>`).join("")}</nav>
+      ${Object.entries(sections).map(([id, title]) => `<a href="#/about?section=${id}">${title}</a>`).join("")}</nav>
   </div></section>
 
   <section class="section" id="corpus"><div class="container">
@@ -143,6 +146,22 @@ export function render(root, D, params) {
       </tbody>
     </table>
     <p class="note">For trend checks, the abstract-only subset uses each paper's original mapping and restricts the denominator to papers with usable abstracts.</p>
+  </div></section>
+
+  <section class="section" id="evidence"><div class="container">
+    <h2 class="section-title">Chapter evidence</h2>
+    <p class="section-sub">Each chapter answers its question with a different measure. All are computed by <code>python -m pa_map evidence</code> from the same corpus and published as aggregates in <code>data/chapters/</code>.</p>
+    <table class="kv"><tbody>
+      <tr><th>Ch1 · Field map and theme shares</th><td>Topic assignments and 2-D coordinates above; a theme's share is its papers divided by all papers published that year.</td></tr>
+      <tr><th>Ch2 · Theory vs. phenomenon</th><td>An LLM labels each abstract as primarily theory- or phenomenon-driven (3-year rolling average). Status: <strong>${E.ch2_orientation.status === "ready" ? `ready (${esc(E.ch2_orientation.model)}, ${fmt(E.ch2_orientation.n)} papers)` : "awaiting LLM labels"}</strong>.</td></tr>
+      <tr><th>Ch2 · Theory trajectories</th><td>Share of abstracts that name each of six frameworks, using the auditable patterns in <code>pipeline/coding_rules.toml</code> (5-year rolling average).</td></tr>
+      <tr><th>Ch3 · Fragmentation</th><td>Effective paradigms (1/HHI over subtopic shares), HHI, semantic coherence (mean pairwise cosine of SPECTER2 vectors within a year) and dispersion (mean distance to the year's centroid in the same space).</td></tr>
+      <tr><th>Ch3 · Citation flows</th><td>${E.ch3_citations.status === "ready" ? `Crossref reference lists matched by DOI to the corpus: ${fmt(E.ch3_citations.edges)} links from ${fmt(E.ch3_citations.papers_with_refs)} citing papers. References without a DOI, and citations to work outside the five journals, are not counted.` : "Awaiting reference lists."}</td></tr>
+      <tr><th>Ch4 · Methods and data sources</th><td>Keyword rules for nine causal identification methods and five data sources, applied to title + abstract (${fmt(E.ch4_methods.n_coded)} abstracts). A paper can use several methods; the data source is the first matching rule. Rules can be audited with <code>python -m pa_map evidence --sample KEY</code>.</td></tr>
+      <tr><th>Ch5 · Periphery test</th><td>Distance of each coded paper from the centroid of the 2-D map; Welch's t-test, Cohen's d.</td></tr>
+      <tr><th>Ch5 · Question importance and scope</th><td>LLM ratings from 1 to 10. Status: <strong>${E.ch5_importance.status === "ready" ? `ready (${esc(E.ch5_importance.model)})` : "awaiting LLM scores"}</strong>.</td></tr>
+    </tbody></table>
+    <p class="note">The keyword and LLM codes are approximations, not hand-coded measurements. Abstracts often omit the method or data source, so shares understate true use.</p>
   </div></section>
 
   <section class="section" id="version"><div class="container">

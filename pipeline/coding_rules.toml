@@ -1,0 +1,99 @@
+# Keyword coding rules used by `python -m pa_map evidence`.
+# Every rule is a case-insensitive regular expression applied to "title + abstract".
+# Only papers with a usable abstract are coded; papers without an abstract are left out of
+# the denominator of every method, data-source and theory-mention series.
+# Edit a rule, rerun `python -m pa_map evidence`, and the site picks up the new numbers.
+# Audit a rule with `python -m pa_map evidence --sample <key>` (prints 20 random matches).
+
+# ---------------------------------------------------------------------------------------
+# Chapter 2 · named theories and frameworks (mention rate in abstracts)
+# `featured` = the three frameworks the chapter walks through one by one.
+[theories]
+featured = ["npm", "principal_agent", "institutional"]
+
+[theories.npm]
+label = "New Public Management"
+pattern = "new public management|\\bNPM\\b"
+
+[theories.principal_agent]
+label = "Principal–Agent Theory"
+pattern = "principal[- ]agent|\\bagency theor"
+
+[theories.institutional]
+label = "Institutional Theory"
+pattern = "institutional theor|new institutionalism|neo-?institutional|historical institutionalism|institutional isomorphism|rational choice institutionalism"
+
+[theories.network]
+label = "Network & New Public Governance"
+pattern = "network governance|new public governance|governance network"
+
+[theories.psm]
+label = "Public Service Motivation"
+pattern = "public service motivation"
+
+[theories.public_value]
+label = "Public Value"
+pattern = "public value"
+
+# ---------------------------------------------------------------------------------------
+# Chapter 4 · causal identification methods (a paper can use several)
+[methods.panel_fixed_effects]
+label = "Panel / Fixed Effects"
+pattern = "fixed[- ]effects?|panel data|panel regression|longitudinal panel|two-way fixed"
+
+[methods.diff_in_diff]
+label = "Difference-in-Differences"
+pattern = "difference[- ]in[- ]differences?|diff-in-diff|(?-i:\\bDiD\\b)|differences-in-differences"
+
+[methods.randomized_experiment]
+label = "Randomized Experiments"
+pattern = "randomi[sz]ed (controlled |field )?(trial|experiment)|field experiment|survey experiment|lab(oratory)? experiment|conjoint (experiment|analysis|design)|vignette experiment|randomly assigned|random assignment|\\bRCTs?\\b"
+
+[methods.instrumental_variables]
+label = "Instrumental Variables"
+pattern = "instrumental[- ]variables?|two-stage least squares|\\b2SLS\\b"
+
+[methods.regression_discontinuity]
+label = "Regression Discontinuity"
+pattern = "regression[- ]discontinuity|\\bRDD\\b"
+
+[methods.matching]
+label = "Matching"
+pattern = "propensity[- ]score|coarsened exact matching|matching (estimator|methods?|design|approach|analysis)|matched (sample|comparison|control)"
+
+[methods.synthetic_control]
+label = "Synthetic Control"
+pattern = "synthetic control"
+
+[methods.event_study]
+label = "Event Study"
+pattern = "event[- ]study|event[- ]history"
+
+[methods.natural_experiment]
+label = "Natural / Quasi-Experiments"
+pattern = "natural experiment|quasi[- ]experiment|exogenous (shock|variation)"
+
+# ---------------------------------------------------------------------------------------
+# Chapter 4 · primary data source (one label per paper; first matching rule wins)
+[sources]
+order = ["experiment", "survey", "interviews", "case_study", "archival"]
+
+[sources.experiment]
+label = "Experiments (field, lab & survey)"
+pattern = "experiment(?!s? (with|in) (democracy|governance))|randomi[sz]ed|conjoint|vignette"
+
+[sources.survey]
+label = "Survey"
+pattern = "\\bsurveys?\\b|\\bsurveyed\\b|questionnaire|respondents"
+
+[sources.interviews]
+label = "Interviews & Focus Groups"
+pattern = "interview|focus groups?"
+
+[sources.case_study]
+label = "Case Study & Qualitative"
+pattern = "case stud|ethnograph|qualitative|process tracing|document analysis|fieldwork"
+
+[sources.archival]
+label = "Archival & Secondary Data"
+pattern = "administrative (data|records)|archival|secondary data|panel data|data ?set|census|budget data|official statistics|longitudinal data|records of|database|fixed[- ]effects|regression"

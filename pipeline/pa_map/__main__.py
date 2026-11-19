@@ -6,6 +6,9 @@
   python -m pa_map cluster                  stability, k-means, macro themes, UMAP, review sheets
   python -m pa_map export   [--release]     public JSON for the website (+ field check)
   python -m pa_map all      [--pilot]       fetch -> clean -> embed (both) -> cluster -> export
+  python -m pa_map refs                     Crossref reference lists (citation network)
+  python -m pa_map classify [--limit N] [--model M]   LLM orientation + question ratings (needs OPENAI_API_KEY)
+  python -m pa_map evidence [--sample KEY]  chapter evidence files (site/public/data/chapters/)
   python -m pa_map demo                     synthetic demo data (never publish as results)
 """
 import os
@@ -51,6 +54,18 @@ def main():
     if cmd in ("export", "all"):
         from . import export
         export.run(cfg, status="release" if "--release" in flags else "pilot")
+    if cmd == "refs":
+        from . import refs
+        refs.run(cfg)
+    if cmd == "classify":
+        from . import classify
+        args = sys.argv[2:]
+        opt = lambda k, d=None: args[args.index(k) + 1] if k in args else d
+        classify.run(cfg, model=opt("--model", "gpt-4o-mini"), limit=int(opt("--limit", 0)) or None)
+    if cmd in ("evidence", "all"):
+        from . import evidence
+        args = sys.argv[2:]
+        evidence.run(cfg, sample=args[args.index("--sample") + 1] if "--sample" in args else None)
 
 
 if __name__ == "__main__":

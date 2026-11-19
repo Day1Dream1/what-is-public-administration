@@ -1,58 +1,43 @@
+// The six chapters, mirroring What is Strategy?'s chapter structure one-to-one.
+// `nav` is the question shown in the sidebar; the chapter page's H1 can be an answer.
 export const CHAPTERS = [
-  {
-    id: "field-map",
-    label: "The field over time",
-    summary: "Start with the research map and compare how the share of selected themes changed between two periods.",
-  },
-  {
-    id: "ideas",
-    label: "Ideas and theories",
-    summary: "Follow the title language of reform, motivation and representation over time.",
-  },
-  {
-    id: "journals",
-    label: "Five journals, one field",
-    summary: "Hold the map steady, switch journals and see their different emphases.",
-  },
-  {
-    id: "methods-in-titles",
-    label: "Methods in titles",
-    summary: "Trace when authors put case studies, experiments and evidence syntheses in their titles.",
-  },
-  {
-    id: "methods-and-questions",
-    label: "Methods and questions",
-    summary: "Compare where case-study and experiment wording appears across research themes.",
-  },
+  { id: "what-is-public-administration", nav: "What is public administration — and how has the field evolved?", load: () => import("./story/ch1.js") },
+  { id: "big-theories", nav: "What happened to the big theories?", load: () => import("./story/ch2.js") },
+  { id: "fracturing", nav: "Is the public administration field fracturing?", load: () => import("./story/ch3.js") },
+  { id: "methods", nav: "What methods do scholars use?", load: () => import("./story/ch4.js") },
+  { id: "methods-shaping-questions", nav: "Are our methods shaping the questions we ask?", load: () => import("./story/ch5.js") },
+  { id: "conclusion", nav: "What we learned", load: () => import("./story/ch6.js") },
 ];
 
-export function chapterRoute(id) {
-  return `chapters/${id}`;
-}
+// Earlier chapter routes keep working.
+export const LEGACY_CHAPTER_ROUTES = {
+  findings: "chapters/what-is-public-administration",
+  "chapters/field-map": "chapters/what-is-public-administration",
+  "chapters/ideas": "chapters/big-theories",
+  "chapters/journals": "explore/journals",
+  "chapters/methods-in-titles": "chapters/methods",
+  "chapters/methods-and-questions": "chapters/methods-shaping-questions",
+  trends: "explore/topics",
+  methods: "about",
+};
 
-export function chapterHref(id) {
-  return `#/${chapterRoute(id)}`;
-}
+export const chapterRoute = (id) => `chapters/${id}`;
+export const chapterHref = (id) => `#/${chapterRoute(id)}`;
 
 export function chapterList() {
   return `<ol class="chapter-index" role="list">
-    ${CHAPTERS.map((chapter, i) => `
-      <li>
-        <a class="chapter-index-link" href="${chapterHref(chapter.id)}">
-          <span class="chapter-number" aria-hidden="true">${i + 1}</span>
-          <span class="chapter-index-copy"><strong>${chapter.label}</strong><span>${chapter.summary}</span></span>
-          <span class="chapter-index-arrow" aria-hidden="true">→</span>
-        </a>
-      </li>`).join("")}
+    ${CHAPTERS.map((c, i) => `<li><a class="chapter-index-link" href="${chapterHref(c.id)}">
+      <span class="chapter-number" aria-hidden="true">${i + 1}</span>
+      <span class="chapter-index-copy"><strong>${c.nav}</strong></span>
+      <span class="chapter-index-arrow" aria-hidden="true">→</span></a></li>`).join("")}
   </ol>`;
 }
 
 export function renderChapterIndex(root) {
-  root.innerHTML = `<section class="section">
-    <div class="container">
-      <h1 class="title">Chapters</h1>
-      <p class="section-sub">Start with the field as a whole, then read what the five journals reveal about ideas and methods.</p>
-      ${chapterList()}
-    </div>
-  </section>`;
+  root.innerHTML = `<section class="hero"><div class="container hero-inner" style="padding:56px 0 40px">
+      <p class="kicker">Chapters</p>
+      <h1 class="title">Six questions about public administration research</h1>
+      <p class="dek">Each chapter asks one question and answers it with a different kind of evidence from the same corpus.</p>
+    </div></section>
+    <section class="section"><div class="container">${chapterList()}</div></section>`;
 }
