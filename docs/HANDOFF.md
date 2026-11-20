@@ -36,7 +36,7 @@ Claude Code 的仓库入口是 `CLAUDE.md`，Codex 从 `AGENTS.md` 进入，两�
 
 Explore 七项：`#/explore`、`#/explore/themes`、`#/explore/topics`、`#/explore/journals`、`#/explore/citations`、`#/explore/methods`、`#/about`。
 
-章节数据由 `python -m pa_map evidence` 生成到 `site/public/data/chapters/`，只含汇总数和按 `papers.json` 顺序对齐的方法编码。LLM 相关的三处（第 2 章理论/现象、第 5 章问题评分、第 6 章两条线）读取本机的 `pipeline/data/interim/llm_labels.jsonl`（8,874 篇，2026-11-19 生成，不进 Git）。没有该文件时这三处显示“Awaiting data”。第 2、6 章的正文按数据走向生成，重跑标签后结论会随数据变化。
+章节数据由 `python -m pa_map evidence` 生成到 `site/public/data/chapters/`，只含汇总数和按 `papers.json` 顺序对齐的方法编码。所有基于摘要的指标只覆盖研究型 article（`eligibility.py`，8,481 篇）；地图、主题份额、碎片化和引文仍用全部记录。LLM 相关的三处（第 2 章理论/现象、第 5 章问题评分、第 6 章两条线）读取本机的 `pipeline/data/interim/llm_labels.jsonl`（提示词 v2 + gpt-4.1-mini，2026-11-20 生成，不进 Git）。人工复核 100 篇的一致率由 `python -m pa_map validate` 写入 `pipeline/labels/llm_validation.json`，在 About 页展示。没有标签文件时这三处显示“Awaiting data”。第 2、6 章的正文按数据走向生成，重跑标签后结论会随数据变化。
 
 ## 改哪里
 
@@ -48,7 +48,7 @@ Explore 七项：`#/explore`、`#/explore/themes`、`#/explore/topics`、`#/expl
 | 滚动引擎、图形组件、章节地图 | `site/src/story/engine.js`、`charts.js`、`storymap.js`、`site/src/style.css` |
 | 方法 / 理论 / 数据来源的关键词规则 | `pipeline/coding_rules.toml` |
 | 章节证据计算、引文、LLM 标签 | `pipeline/pa_map/evidence.py`、`refs.py`、`classify.py` |
-| 研究型 article 判定、LLM 标签人工复核抽样 | `pipeline/pa_map/eligibility.py`、`review_sample.py` |
+| 研究型 article 判定、LLM 标签人工复核抽样与一致率 | `pipeline/pa_map/eligibility.py`、`review_sample.py`、`validate.py` |
 | Explore 七个工具 | `site/src/pages/explore.js`、`themes.js`、`topics.js`、`journals.js`、`citations.js`、`methods-dashboard.js`、`methods.js`（About） |
 | 章节索引、导航和旧路径兼容 | `site/src/chapters.js`、`site/src/main.js` |
 | 趋势和方法说明 | `site/src/pages/trends.js`、`site/src/pages/methods.js` |

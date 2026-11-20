@@ -38,7 +38,7 @@ export default async function (D) {
         title: "Question Importance & Scope",
         make: (el, ctx) => boxPlots(el, ctx, I),
         steps: [
-          { id: "qi-setup", state: {}, html: `I took the test further. Using an LLM${ready ? ` (${I.model})` : ""}, I scored every paper's research question on two dimensions: <strong>importance</strong> (practical and theoretical significance) and <strong>scope</strong> (breadth of applicability). Each paper received a score from 1 to 10.${ready ? "" : " " + pend}` },
+          { id: "qi-setup", state: {}, html: `I took the test further. Using an LLM${ready ? ` (${I.model})` : ""}, I scored every paper's research question on two dimensions: <strong>importance</strong> (practical and theoretical significance) and <strong>scope</strong> (breadth of applicability). Each paper received a score from 1 to 10.${ready ? "" : " " + pend}${ready && I.validation ? ` A human check of ${I.validation.n} articles found that the model ranks scope roughly as a person would (ρ = ${I.validation.scope_rho.toFixed(2)}) but importance only weakly (ρ = ${I.validation.importance_rho.toFixed(2)}), so treat these scores as rough.` : ""}` },
           { id: "qi-importance", state: { emph: "importance" }, html: ready ? `Causal papers score ${cmp("importance")}.` : `This step will compare <strong>importance</strong> scores for causal and other papers.` },
           { id: "qi-scope", state: { emph: "scope" }, html: ready ? `They score ${cmp("scope")}.` : `…and this one <strong>scope</strong> scores.` },
           { id: "qi-verdict", state: {}, html: ready

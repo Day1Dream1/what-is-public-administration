@@ -1,1 +1,1 @@
-{"centroid":{"x":0.5757,"y":0.4824},"rings":[0.1996,0.2947,0.3782,0.487],"n_causal":538,"n_noncausal":8336,"mean_causal":0.3109,"mean_noncausal":0.2879,"test":{"t":4.5288,"p":0.0,"cohens_d":0.1971},"units":"map units (0–1 normalised UMAP coordinates)"}
+{"centroid":{"x":0.5804,"y":0.4806},"rings":[0.1978,0.2943,0.3763,0.4886],"n_causal":535,"n_noncausal":7946,"mean_causal":0.3104,"mean_noncausal":0.2872,"test":{"t":4.5336,"p":0.0,"cohens_d":0.1982},"units":"map units (0–1 normalised UMAP coordinates)"}

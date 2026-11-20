@@ -51,7 +51,7 @@ export default async function (D) {
             ? `Using a 3-year rolling average, theory-driven work rose from about ${th80}% of papers in the 1980s to a peak of roughly <strong>${Math.round(O.peak.theory)}% around ${O.peak.year}</strong>.`
             : `Once the labels are in, this step marks the year theory-driven work peaked.` },
           { id: "tvp-shift", state: { emph: "phenomenon" }, html: ready
-            ? `Since then, <strong>phenomenon-driven research</strong> has climbed back to about ${Math.round(O.recent_phenomenon)}% of papers in 2020–${Y1}. In public administration it has always been the majority: its share never fell below ${minPhen}%.`
+            ? `Since then, <strong>phenomenon-driven research</strong> has climbed back to about ${Math.round(O.recent_phenomenon)}% of papers in 2020–${Y1}. ${minPhen >= 50 ? `In public administration it has always been the majority: its share never fell below ${minPhen}%.` : `It has been the majority in almost every year; only around ${O.peak.year} did it dip to ${minPhen}% and let theory-driven work edge ahead.`}`
             : `…and this step the recent share of <strong>phenomenon-driven research</strong>.` },
           { id: "tvp-meaning", state: {}, html: `In public administration, a phenomenon-driven paper typically starts from a reform, a policy or a service, such as a performance-pay scheme, a digital benefits portal or a pandemic response, rather than from a general theory it sets out to test.` },
         ],

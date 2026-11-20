@@ -21,7 +21,9 @@ from collections import Counter, defaultdict
 
 import numpy as np
 
-from .common import INTERIM, PIPELINE_DIR, PRIVATE, RAW, SITE_DATA, read_jsonl, write_json
+from .common import INTERIM, LABELS, PIPELINE_DIR, PRIVATE, RAW, SITE_DATA, read_jsonl, write_json
+from .classify import PROMPT_VERSION
+from .eligibility import is_research_article
 
 OUT = SITE_DATA / "chapters"
 Y0, Y1 = 1980, 2025
@@ -90,9 +92,12 @@ def load():
     P = []
     for i in order:
         p, a = papers[i], assign[i]
+        # Abstract-based evidence (theory mentions, methods, data sources, LLM labels, periphery)
+        # covers research articles with a usable abstract only; see eligibility.py.
+        coded = is_research_article(p)
         P.append({"id": i, "doi": (p.get("doi") or "").lower(), "year": p["year"], "journal": p["journal"],
-                  "text": (p["title"] + ". " + (p.get("abstract") or "")) if p["has_abstract"] else "",
-                  "title": p["title"], "has_abstract": p["has_abstract"], "macro": a["macro"], "sub": a["sub"],
+                  "text": (p["title"] + ". " + (p.get("abstract") or "")) if coded else "",
+                  "title": p["title"], "has_abstract": coded, "macro": a["macro"], "sub": a["sub"],
                   "x": a["x"], "y": a["y"]})
     return P, topics
 
@@ -107,7 +112,7 @@ def load_vectors(P):
 
 def load_llm():
     path = INTERIM / "llm_labels.jsonl"
-    return {r["id"]: r for r in read_jsonl(path)} if path.exists() else {}
+    return {r["id"]: r for r in read_jsonl(path) if r.get("prompt") == PROMPT_VERSION} if path.exists() else {}
 
 
 # ---------------------------------------------------------------------------- chapter 2
@@ -394,9 +399,19 @@ def run(cfg=None, sample: str | None = None):
     peri = periphery(P, codes)
     imp = importance(P, codes, llm)
     syn = synthesis(orient, meth, frag)
+    raw = {q["id"]: q for q in read_jsonl(INTERIM / "papers.jsonl")}
+    orient["eligibility"] = {"records": len(P), "with_abstract": sum(1 for p in P if (raw[p["id"]].get("abstract") or "").strip()),
+                             "eligible": sum(1 for p in P if p["has_abstract"]),
+                             "rule": "OpenAlex type 'article'; not an editorial, introduction, comment, reply or correction; abstract of at least 50 words that is not a citation line or reference list (pipeline/pa_map/eligibility.py)."}
+    vpath = LABELS / "llm_validation.json"
+    if vpath.exists():
+        orient["validation"] = json.loads(vpath.read_text())
+        if imp.get("status") == "ready":
+            v = orient["validation"]["current"]
+            imp["validation"] = {"n": v["importance"]["n"], "importance_rho": v["importance"]["spearman"], "scope_rho": v["scope"]["spearman"]}
     paper_codes = {"methods": [{"key": k, "label": R["methods"][k][0]} for k in mkeys],
                    "sources": [{"key": k, "label": R["sources"][k][0]} for k in skeys],
-                   "note": "Aligned with papers.json rows. m = bitmask of methods; s = data-source index (-1 none); c = 1 if coded (has abstract).",
+                   "note": "Aligned with papers.json rows. m = bitmask of methods; s = data-source index (-1 none); c = 1 if coded (research article with a usable abstract).",
                    "m": [c[0] for c in codes], "s": [c[1] for c in codes], "c": [c[2] for c in codes]}
     for name, obj in (("ch2_orientation", orient), ("ch2_theories", th), ("ch2_shifts", sh),
                       ("ch3_fragmentation", frag), ("ch3_citations", cit), ("ch4_methods", meth),

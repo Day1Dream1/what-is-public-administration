@@ -128,35 +128,33 @@ Explore 七项：Semantic Map（`#/explore`）、Theme Browser（`#/explore/them
 | syn-together | 恢复 | 同左 | — |
 | phil-kuhn / phil-lamppost / phil-new-paradigm / phil-trading / phil-stokes | 图不变，只换文字卡 | 同左，五个视角改写为公共行政语境 | — |
 
-## 四、LLM 标签（2026-11-19 已完成）
+## 四、LLM 标签与人工复核（2026-11-20 定稿）
 
-gpt-4o-mini 对 8,874 篇有摘要的论文逐篇标注了理论 / 现象导向、问题重要性和适用范围（1–10），0 条失败，费用约 0.62 美元。标签文件 `pipeline/data/interim/llm_labels.jsonl` 只留在本机，不进 Git；公开数据只含汇总数。
+**纳入范围**：`pipeline/pa_map/eligibility.py` 规定研究型 article。条件是 OpenAlex 类型为 `article`，并且不属于社论、专刊 / 专题导言、评论与回应、勘误；摘要不少于 50 词，也不能只是作者题名行或参考文献。有摘要的 8,874 篇中，8,481 篇符合条件。所有基于摘要的指标（理论提及、方法、数据来源、LLM 标签、中心距离检验）只用这 8,481 篇。地图、主题份额、碎片化和引文仍用全部 10,606 条记录。
 
-数据推翻了沿用参考站的几处假设，正文已改为按数据生成：
+**人工复核**：项目负责人盲评了 100 篇分层抽样的 article（`review-sample` 生成），结果如下表。
 
-- 理论导向不是一路下降：1980 年代约 18%，2015 年前后升到约 41% 的峰值，近年回落到约 31%。现象导向始终是多数。
-- 第 2 章子领域的“理论 / 现象 / 混合”按全领域基准 ±10 个百分点判定（固定 50% 阈值会把几乎全部子领域判为现象导向）。增长和萎缩的子领域在导向上没有明显差别。
-- 因果论文的重要性（7.69 对 7.57，d = 0.22）和适用范围（6.68 对 6.56，d = 0.23）略高。评分基本是整数，箱线图改用均值 ± 0.674 SD 和 ± 1.645 SD，与参考站一致。
+| 与人工判断的一致程度 | 提示词 v1 · gpt-4o-mini | 提示词 v2 · gpt-4.1-mini（网站使用） |
+|---|---|---|
+| 理论 / 现象：一致率（加权） | 66%（63%） | 73%（72%） |
+| 理论 / 现象：Cohen's κ | 0.31 | 0.44 |
+| 重要性：Spearman ρ | 0.03 | 0.21 |
+| 适用范围：Spearman ρ | 0.01 | 0.42 |
+
+v1 的评分几乎全是 7–8 分，与人工判断无关。v2 改为按论文的“主要贡献”判断导向，评分加了锚点，并在 8,481 篇上重跑（约 2 美元）。v2 是看过 v1 的分歧后写的，在同一批 100 篇上评估，数字偏乐观。About 页说明了这一点，第 5 章也注明重要性评分只是粗略参考。统计量由 `python -m pa_map validate` 写入 `pipeline/labels/llm_validation.json`，不含摘要。
+
+**v2 下的主要结论**：理论导向从 1980 年代约 25% 升到 2015 年前后约 52% 的峰值，这是唯一一个现象导向低于一半的时段；近年回落到约 44%，现象导向回到约 56%。增长和萎缩的子领域在导向上仍没有明显差别。因果论文的重要性评分略高（d = 0.27），适用范围基本无差别（d = −0.09）。
 
 重跑方法（密钥只放环境变量）：
 
 ```bash
 cd pipeline && source .venv/bin/activate
 export OPENAI_API_KEY="$(cat ~/path/to/openai_key.txt)"   # 不要写进仓库
-python -m pa_map classify               # 已有标签会跳过
-python -m pa_map evidence               # 重算全部章节数据
+python -m pa_map classify               # 默认 gpt-4.1-mini + 提示词 v2，已有标签会跳过
+python -m pa_map validate data/review/复核.xlsx
+python -m pa_map evidence
 cd ../site && npm run build && node scripts/check-release.mjs dist
 ```
-
-建议人工抽查约 100 篇的分类结果，把一致率写进 About。
-
-### 研究型 article 判定与人工复核（2026-11-20）
-
-OpenAlex 几乎把所有期刊条目都标为 `article`，第一版复核表因此混入了书评式条目、社论、专刊导言、评论与回应，以及摘要只是作者题名行或参考文献的记录。`pipeline/pa_map/eligibility.py` 现在明确规定研究型 article：OpenAlex 类型为 `article`（排除 55 篇 `review`），题名和摘要不属于上述几类，摘要不少于 50 词。在 8,874 篇有摘要的记录中，8,481 篇符合条件；被排除的记录及原因写入本机 `data/review/excluded_records.csv`。
-
-`python -m pa_map review-sample` 只从这 8,481 篇中分层抽样，生成 `LLM标签复核_100篇_v2.xlsx`（含摘要，只留本机）。第一版复核表作废。
-
-章节数据目前仍按全部 8,874 篇有摘要的记录计算。复核确认后，下一步把同一规则用于 `evidence`，重算第 2、4、5、6 章并更新正文数字。
 
 ## 五、复现截图对照
 

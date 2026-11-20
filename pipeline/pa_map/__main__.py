@@ -11,6 +11,7 @@
   python -m pa_map evidence [--sample KEY]  chapter evidence files (site/public/data/chapters/)
   python -m pa_map eligibility              research-article rules; writes data/review/excluded_records.csv
   python -m pa_map review-sample [--seed N] ~100 eligible articles for human review of LLM labels (xlsx)
+  python -m pa_map validate PATH.xlsx       agreement between the filled-in review and the LLM labels
   python -m pa_map demo                     synthetic demo data (never publish as results)
 """
 import os
@@ -63,7 +64,7 @@ def main():
         from . import classify
         args = sys.argv[2:]
         opt = lambda k, d=None: args[args.index(k) + 1] if k in args else d
-        classify.run(cfg, model=opt("--model", "gpt-4o-mini"), limit=int(opt("--limit", 0)) or None)
+        classify.run(cfg, model=opt("--model", "gpt-4.1-mini"), limit=int(opt("--limit", 0)) or None)
     if cmd == "eligibility":
         from . import eligibility
         eligibility.run(cfg)
@@ -71,6 +72,9 @@ def main():
         from . import review_sample
         args = sys.argv[2:]
         review_sample.run(cfg, seed=int(args[args.index("--seed") + 1]) if "--seed" in args else 20261119)
+    if cmd == "validate":
+        from . import validate
+        validate.run(cfg, sys.argv[2])
     if cmd in ("evidence", "all"):
         from . import evidence
         args = sys.argv[2:]

@@ -32,6 +32,7 @@ export function update(params) {
 export async function render(root, D, params) {
   const m = D.manifest, P = m.params;
   const E = await evMany(["ch2_orientation", "ch3_citations", "ch4_methods", "ch5_importance"]);
+  const EL = E.ch2_orientation.eligibility, V = E.ch2_orientation.validation;
   const years = d3.range(m.window[0], m.window[1] + 1);
   const covBy = new Map(D.coverage.map((c) => [`${c.journal}|${c.year}`, c]));
   // reconciliation: published papers per journal-year must equal coverage.mapped
@@ -152,16 +153,18 @@ export async function render(root, D, params) {
     <h2 class="section-title">Chapter evidence</h2>
     <p class="section-sub">Each chapter answers its question with a different measure. All are computed by <code>python -m pa_map evidence</code> from the same corpus and published as aggregates in <code>data/chapters/</code>.</p>
     <table class="kv"><tbody>
+      ${EL ? `<tr><th>Which records are coded</th><td>The map, theme shares, fragmentation and citation flows use all ${fmt(EL.records)} mapped records. Every abstract-based measure (theory mentions, methods, data sources, LLM labels, periphery test) uses only research articles with a usable abstract: ${fmt(EL.eligible)} of the ${fmt(EL.with_abstract)} records that have an abstract. OpenAlex labels almost every journal item an “article”, so editorials, symposium and special-issue introductions, comments, replies, corrections, and records whose “abstract” is only a citation line, a reference list or under 50 words are left out (<code>pipeline/pa_map/eligibility.py</code>).</td></tr>` : ""}
       <tr><th>Ch1 · Field map and theme shares</th><td>Topic assignments and 2-D coordinates above; a theme's share is its papers divided by all papers published that year.</td></tr>
-      <tr><th>Ch2 · Theory vs. phenomenon</th><td>An LLM reads each title and abstract and labels the paper as primarily theory- or phenomenon-driven (3-year rolling average; prompt in <code>pipeline/pa_map/classify.py</code>). In the sub-area chart, a sub-area counts as theory-oriented when its theory-driven share is at least 10 points above the corpus-wide share, phenomenon-oriented when 10 points below, and mixed otherwise. Status: <strong>${E.ch2_orientation.status === "ready" ? `ready (${esc(E.ch2_orientation.model)}, ${fmt(E.ch2_orientation.n)} papers)` : "awaiting LLM labels"}</strong>.</td></tr>
+      <tr><th>Ch2 · Theory vs. phenomenon</th><td>An LLM reads each title and abstract and decides whether the paper's primary contribution is to a general theory or concept (theory-driven) or to understanding a specific problem, policy or setting (phenomenon-driven); 3-year rolling average, prompt in <code>pipeline/pa_map/classify.py</code>. In the sub-area chart, a sub-area counts as theory-oriented when its theory-driven share is at least 10 points above the corpus-wide share, phenomenon-oriented when 10 points below, and mixed otherwise. Status: <strong>${E.ch2_orientation.status === "ready" ? `ready (${esc(E.ch2_orientation.model)}, ${fmt(E.ch2_orientation.n)} papers)` : "awaiting LLM labels"}</strong>.</td></tr>
       <tr><th>Ch2 · Theory trajectories</th><td>Share of abstracts that name each of six frameworks, using the auditable patterns in <code>pipeline/coding_rules.toml</code> (5-year rolling average).</td></tr>
       <tr><th>Ch3 · Fragmentation</th><td>Effective paradigms (1/HHI over subtopic shares), HHI, semantic coherence (mean pairwise cosine of SPECTER2 vectors within a year) and dispersion (mean distance to the year's centroid in the same space).</td></tr>
       <tr><th>Ch3 · Citation flows</th><td>${E.ch3_citations.status === "ready" ? `Crossref reference lists matched by DOI to the corpus: ${fmt(E.ch3_citations.edges)} links from ${fmt(E.ch3_citations.papers_with_refs)} citing papers. References without a DOI, and citations to work outside the five journals, are not counted.` : "Awaiting reference lists."}</td></tr>
       <tr><th>Ch4 · Methods and data sources</th><td>Keyword rules for nine causal identification methods and five data sources, applied to title + abstract (${fmt(E.ch4_methods.n_coded)} abstracts). A paper can use several methods; the data source is the first matching rule. Rules can be audited with <code>python -m pa_map evidence --sample KEY</code>.</td></tr>
       <tr><th>Ch5 · Periphery test</th><td>Distance of each coded paper from the centroid of the 2-D map; Welch's t-test, Cohen's d.</td></tr>
-      <tr><th>Ch5 · Question importance and scope</th><td>LLM ratings from 1 to 10, from the same call as the orientation label. Ratings are whole numbers, so the box plots show mean ± 0.674 SD (box) and mean ± 1.645 SD (whiskers), the normal-approximation quartiles and 5th–95th percentiles, as on the reference site. Status: <strong>${E.ch5_importance.status === "ready" ? `ready (${esc(E.ch5_importance.model)})` : "awaiting LLM scores"}</strong>.</td></tr>
+      <tr><th>Ch5 · Question importance and scope</th><td>LLM ratings from 1 to 10, from the same call as the orientation label, with anchored scale points. Ratings are whole numbers, so the box plots show mean ± 0.674 SD (box) and mean ± 1.645 SD (whiskers), the normal-approximation quartiles and 5th–95th percentiles, as on the reference site. Status: <strong>${E.ch5_importance.status === "ready" ? `ready (${esc(E.ch5_importance.model)})` : "awaiting LLM scores"}</strong>.</td></tr>
     </tbody></table>
     <p class="note">The keyword and LLM codes are approximations, not hand-coded measurements. Abstracts often omit the method or data source, so shares understate true use.</p>
+    ${V ? validationBlock(V) : ""}
   </div></section>
 
   <section class="section" id="version"><div class="container">
@@ -223,4 +226,25 @@ export async function render(root, D, params) {
   showCoverage();
 
   if (params.get("section")) update(params);
+}
+
+function validationBlock(V) {
+  const r = V.reviewed, c = V.current, p = (x) => `${Math.round(100 * x)}%`, f2 = (x) => x.toFixed(2);
+  const row = (lab, a, b) => `<tr><th>${lab}</th><td class="num">${a}</td><td class="num">${b}</td></tr>`;
+  return `
+    <h3 class="sub-title" id="llm-check">Human check of the LLM labels</h3>
+    <p>One coder read ${V.sample} research articles, drawn at random within each combination of LLM label and period, and labelled them blind to the LLM's answer (${V.unsure} marked unsure). The first prompt agreed poorly, so the prompt was rewritten around the paper's primary contribution, with anchored rating scales, and the whole corpus was relabelled.</p>
+    <table class="kv">
+      <thead><tr><th>Agreement with the human coder</th><td>Prompt ${esc(r.prompt)} · ${esc(r.model)}</td><td>Prompt ${esc(c.prompt)} · ${esc(c.model)} (used on this site)</td></tr></thead>
+      <tbody>
+        ${row("Orientation: same label", p(r.agreement), p(c.agreement))}
+        ${row("Orientation: same label, weighted to the corpus", p(r.agreement_weighted), p(c.agreement_weighted))}
+        ${row("Orientation: Cohen's κ", f2(r.kappa), f2(c.kappa))}
+        ${row("Importance: rank correlation (Spearman ρ)", f2(r.importance.spearman), f2(c.importance.spearman))}
+        ${row("Importance: mean, human / LLM", `${f2(r.importance.human_mean)} / ${f2(r.importance.llm_mean)}`, `${f2(c.importance.human_mean)} / ${f2(c.importance.llm_mean)}`)}
+        ${row("Scope: rank correlation (Spearman ρ)", f2(r.scope.spearman), f2(c.scope.spearman))}
+        ${row("Scope: mean, human / LLM", `${f2(r.scope.human_mean)} / ${f2(r.scope.llm_mean)}`, `${f2(c.scope.human_mean)} / ${f2(c.scope.llm_mean)}`)}
+      </tbody>
+    </table>
+    <p class="note">κ of 0.4–0.6 is usually read as moderate agreement. The second prompt was written after reading the first prompt's disagreements on these same articles, so its figures are optimistic. Treat the orientation trend as indicative, the scope ratings as rough, and the importance ratings as weak: the LLM and the human coder rank importance only loosely alike.</p>`;
 }

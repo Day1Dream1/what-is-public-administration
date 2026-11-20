@@ -494,3 +494,5 @@ footer.site a:hover { color: var(--fg); }
 .bar-row { display: grid; grid-template-columns: 52px 1fr 90px; gap: 8px; align-items: center; font-size: 13px; margin: 6px 0; }
 .bar-row > div { background: var(--subtle); height: 10px; border-radius: 6px; overflow: hidden; } .bar-row i { display: block; height: 100%; border-radius: 6px; }
 @media (max-width: 760px) { .stage-cards, .md-grid { grid-template-columns: 1fr; } .lc-row { grid-template-columns: 1fr; } .tc-stats { grid-template-columns: repeat(2, 1fr); } }
+
+.sub-title { font-size: 1.15rem; margin: 2rem 0 0.6rem; }

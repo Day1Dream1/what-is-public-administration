@@ -75,7 +75,11 @@ assert.equal(CHAPTERS.length, 6, "Six chapters, as on the reference site");
 const ev = (f) => load(`data/chapters/${f}.json`);
 const codes = ev("paper_codes");
 for (const k of ["m", "s", "c"]) assert.equal(codes[k].length, rows.length, `paper_codes.${k} must align with papers.json`);
-assert.equal(codes.c.reduce((a, b) => a + b, 0), rows.filter((r) => r[10]).length, "Only papers with abstracts are coded");
+// Only research articles with a usable abstract are coded (pipeline/pa_map/eligibility.py).
+assert(codes.c.every((c, i) => !c || rows[i][10]), "Only papers with abstracts can be coded");
+const elig = ev("ch2_orientation").eligibility;
+assert(elig && codes.c.reduce((a, b) => a + b, 0) === elig.eligible, "Coded papers must equal the eligible research articles");
+assert(elig.with_abstract === rows.filter((r) => r[10]).length && elig.records === rows.length, "Eligibility counts must match papers.json");
 for (const f of ["ch2_orientation", "ch5_importance"]) assert(["ready", "awaiting_llm"].includes(ev(f).status), `${f} status`);
 assert.equal(ev("ch3_citations").status, "ready", "Citation flows need reference data (python -m pa_map refs)");
 assert.equal(ev("ch2_shifts").topics.length, sub.length, "Sub-area shifts must cover every subtopic");
