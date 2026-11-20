@@ -1,0 +1,56 @@
+{
+ "date": "2026-11-20",
+ "coders": 1,
+ "sample": 100,
+ "design": "Stratified random sample of eligible research articles (LLM orientation x four periods); weights restore the corpus mix.",
+ "reviewed": {
+  "prompt": "v1",
+  "model": "gpt-4o-mini",
+  "n": 99,
+  "agreement": 0.657,
+  "agreement_weighted": 0.63,
+  "kappa": 0.314,
+  "human_theory": 57,
+  "llm_theory": 49,
+  "importance": {
+   "n": 99,
+   "spearman": 0.026,
+   "mean_abs_diff": 2.63,
+   "human_mean": 5.22,
+   "llm_mean": 7.63
+  },
+  "scope": {
+   "n": 99,
+   "spearman": 0.009,
+   "mean_abs_diff": 1.91,
+   "human_mean": 5.49,
+   "llm_mean": 6.62
+  }
+ },
+ "current": {
+  "prompt": "v2",
+  "model": "gpt-4.1-mini",
+  "n": 99,
+  "agreement": 0.727,
+  "agreement_weighted": 0.722,
+  "kappa": 0.436,
+  "human_theory": 57,
+  "llm_theory": 60,
+  "importance": {
+   "n": 99,
+   "spearman": 0.214,
+   "mean_abs_diff": 2.04,
+   "human_mean": 5.22,
+   "llm_mean": 6.76
+  },
+  "scope": {
+   "n": 99,
+   "spearman": 0.418,
+   "mean_abs_diff": 1.54,
+   "human_mean": 5.49,
+   "llm_mean": 5.94
+  },
+  "note": "Prompt v2 was written after reading the v1 disagreements, so these figures are optimistic (same 100 articles)."
+ },
+ "unsure": 1
+}

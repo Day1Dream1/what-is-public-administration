@@ -34,3 +34,4 @@ transformers==4.57.6
 typing_extensions==4.16.0
 umap-learn==0.5.12
 urllib3==2.8.0
+openpyxl==3.1.5
