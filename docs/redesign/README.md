@@ -150,6 +150,14 @@ cd ../site && npm run build && node scripts/check-release.mjs dist
 
 建议人工抽查约 100 篇的分类结果，把一致率写进 About。
 
+### 研究型 article 判定与人工复核（2026-11-20）
+
+OpenAlex 几乎把所有期刊条目都标为 `article`，第一版复核表因此混入了书评式条目、社论、专刊导言、评论与回应，以及摘要只是作者题名行或参考文献的记录。`pipeline/pa_map/eligibility.py` 现在明确规定研究型 article：OpenAlex 类型为 `article`（排除 55 篇 `review`），题名和摘要不属于上述几类，摘要不少于 50 词。在 8,874 篇有摘要的记录中，8,481 篇符合条件；被排除的记录及原因写入本机 `data/review/excluded_records.csv`。
+
+`python -m pa_map review-sample` 只从这 8,481 篇中分层抽样，生成 `LLM标签复核_100篇_v2.xlsx`（含摘要，只留本机）。第一版复核表作废。
+
+章节数据目前仍按全部 8,874 篇有摘要的记录计算。复核确认后，下一步把同一规则用于 `evidence`，重算第 2、4、5、6 章并更新正文数字。
+
 ## 五、复现截图对照
 
 ```bash

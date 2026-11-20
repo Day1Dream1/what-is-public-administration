@@ -48,6 +48,7 @@ Explore 七项：`#/explore`、`#/explore/themes`、`#/explore/topics`、`#/expl
 | 滚动引擎、图形组件、章节地图 | `site/src/story/engine.js`、`charts.js`、`storymap.js`、`site/src/style.css` |
 | 方法 / 理论 / 数据来源的关键词规则 | `pipeline/coding_rules.toml` |
 | 章节证据计算、引文、LLM 标签 | `pipeline/pa_map/evidence.py`、`refs.py`、`classify.py` |
+| 研究型 article 判定、LLM 标签人工复核抽样 | `pipeline/pa_map/eligibility.py`、`review_sample.py` |
 | Explore 七个工具 | `site/src/pages/explore.js`、`themes.js`、`topics.js`、`journals.js`、`citations.js`、`methods-dashboard.js`、`methods.js`（About） |
 | 章节索引、导航和旧路径兼容 | `site/src/chapters.js`、`site/src/main.js` |
 | 趋势和方法说明 | `site/src/pages/trends.js`、`site/src/pages/methods.js` |

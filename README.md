@@ -93,6 +93,8 @@ python -m pa_map cluster
 python -m pa_map refs                   # Crossref 参考文献列表（引文网络），约 1 小时，可断点续跑
 python -m pa_map classify --limit 50    # 可选：LLM 理论/现象分类与问题评分（需 OPENAI_API_KEY），先试跑
 python -m pa_map classify               # 全量约 8,900 篇摘要，gpt-4o-mini 实测约 0.6 美元
+python -m pa_map eligibility            # 研究型 article 判定规则；被排除的记录写入 data/review/excluded_records.csv
+python -m pa_map review-sample          # 从符合条件的 article 中分层抽 100 篇，生成人工复核 Excel（含摘要，只留本机）
 python -m pa_map evidence               # 写入 site/public/data/chapters/，只含汇总数
 python -m pa_map evidence --sample diff_in_diff   # 抽查某条关键词规则命中的摘要
 ```
